@@ -1,2 +1,2 @@
-# Too_Tired_to_Know
+# Too Tired to Know
 Study of the effects of sleep deprivation on metacognition
