@@ -1,0 +1,33 @@
+\documentclass[10pt, twoside,a4paper]{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{units}
+\usepackage{csquotes}
+\usepackage{sidenotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{Mathematical details of study \emph{Too Tired to Know}}
+\author{Alvin Gavel}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+In the article \emph{Too Tired to Know} we implement the cumulative model described in Bürkner and Vuorre (2019). The reader is primarily recommended to that article for the details, or -- once it is written -- the section in our article that explains the analysis. This is mostly written for myself to force myself to understand how the model works, since the root of at least half of all evil is the use of statistical recipes without first understanding them. The model is implemented in Python rather than R for the same reason, so that instead of copy-and-pasting their R code I have to think about how to get the equivalent Python code\footnote{Plus, I just don't like R.}.
+
+\section{Basic idea}
+The cumulative model starts out from the assumption that the ordinal variable that we actually measure, $Y$, is an increasing function of some underlying unobservable variable $\tilde{Y}$. Specifically it assumes that there are $K$ thresholds $\tau_k$ such that if $\tau_{k-1} < \tilde{Y} < \tau_{k}$ then we will observe $Y_k$. The underlying $\tilde{Y}$ in turn follows some probability density function $f$ with a corresponding cumulative density function $F$ such that the probability of observing some particular value $Y_k$ is given by $F\left( \tau_k \right) - F\left( \tau_{k-1} \right)$.
+
+
+
+
+\end{document}
