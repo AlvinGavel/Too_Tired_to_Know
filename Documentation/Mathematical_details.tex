@@ -25,7 +25,36 @@
 In the article \emph{Too Tired to Know} we implement the cumulative model described in Bürkner and Vuorre (2019). The reader is primarily recommended to that article for the details, or -- once it is written -- the section in our article that explains the analysis. This is mostly written for myself to force myself to understand how the model works, since the root of at least half of all evil is the use of statistical recipes without first understanding them. The model is implemented in Python rather than R for the same reason, so that instead of copy-and-pasting their R code I have to think about how to get the equivalent Python code\footnote{Plus, I just don't like R.}.
 
 \section{Basic idea}
-The cumulative model starts out from the assumption that the ordinal variable that we actually measure, $Y$, is an increasing function of some underlying unobservable variable $\tilde{Y}$. Specifically it assumes that there are $K$ thresholds $\tau_k$ such that if $\tau_{k-1} < \tilde{Y} < \tau_{k}$ then we will observe $Y_k$. The underlying $\tilde{Y}$ in turn follows some probability density function $f$ with a corresponding cumulative density function $F$ such that the probability of observing some particular value $Y_k$ is given by $F\left( \tau_k \right) - F\left( \tau_{k-1} \right)$.
+The cumulative model starts out from the assumption that the ordinal variable that we actually measure, $Y$, is an increasing function of some underlying unobservable variable $\tilde{Y}$. Specifically it assumes that there are $K$ thresholds $\tau_k$ such that if $\tau_{k-1} < \tilde{Y} < \tau_{k}$ then we will observe $Y = k$. The underlying $\tilde{Y}$ in turn follows some probability density function $f$ such that the probability $P \left( Y = k \right)$ is given by
+\begin{align}
+P \left( Y = k \right) &= \int_{\tau_{k-1}}^{\tau_k} f \left( \tilde{Y} \right)  d \tilde{Y} \label{eq_Pyk_integral}
+\intertext{If we call the corresponding cumulative density function $F$, this is}
+&= F\left( \tau_k \right) - F\left( \tau_{k-1} \right)
+\end{align}
+
+\section{Linear model of prediction term}
+So far the model is very general, but to get anywhere we need to make some assumptions about what the function $f$ actually looks like. We split $\tilde{Y}$ into a predictor term $\eta$ and an error term $\varepsilon$, so that
+\begin{align}
+\tilde{Y} &= \eta + \varepsilon \label{eq_terms}
+\intertext{We now assume that $\eta$ is a linear function, so that}
+\eta &= \sum_{n=0}^K b_n x_n \label{eq_linear}
+\intertext{Inserting \eqref{eq_linear} into \eqref{eq_terms} gives us}
+\tilde{Y} &= \sum_{n=0}^K b_n x_n + \varepsilon \label{eq_linear_2}
+\end{align}
+Since $d \tilde{Y} / d \varepsilon = 1$ we can rewrite \eqref{eq_Pyk_integral} as
+\begin{align}
+P \left( Y = k \right) &= \int_{\tau_{k-1}}^{\tau_k} f \left( \sum_{n=0}^K b_n x_n + \varepsilon \right)  d \varepsilon
+\intertext{Shifting the integration boundaries by the predictor term gives us}
+&= F \left( \tau_k - \sum_{n=0}^K b_n x_n \right) - F \left( \tau_{k-1} - \sum_{n=0}^K b_n x_n \right) \label{eq_linear_final}
+\end{align}
+
+\section{Normal model of error term}
+We now need some kind of model of what that error term looks like. To make life simpler\footnote{It is common to justify assumptions of normality with reference to the central limit theorem. I would argue that this often over-interprets the central limit theorem as being much broader than it actually is, and that the real reason why normal distributions get used so often is that they are just so very convenient.}, we assume that it is normally distributed. If we denote the CDF of the normal function with $\Phi$, then \eqref{eq_linear_final} takes the form:
+\begin{align}
+P \left( Y = k \right) &=
+\Phi \left( \tau_k - \sum_{n=0}^K b_n x_n \right) - \Phi \left( \tau_{k-1} - \sum_{n=0}^K b_n x_n \right)
+\end{align}
+This means we have a regression problem where we need to estimate the regressions $\tau_k$ and $\tau_{k-1}$ and the regression coefficients $b_n$.
 
 
 
