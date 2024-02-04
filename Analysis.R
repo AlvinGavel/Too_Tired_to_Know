@@ -1,9 +1,8 @@
 library(brms)
 library(dplyr)
 
-#
+# Loading and pre-processing of data
 kss = read.csv(file = 'Data/kss_data.csv')
-
 arit = kss[kss$test_type == 'M',]
 arit$is_sd = as.integer(arit$sd == 'Sleep Deprivation')
 

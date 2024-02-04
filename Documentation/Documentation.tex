@@ -1,0 +1,134 @@
+\documentclass[10pt, twoside,a4paper]{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{units}
+\usepackage{csquotes}
+\usepackage{sidenotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{tikz}
+
+\title{Documentation}
+\author{Alvin Gavel}
+\date{}
+
+% Thanks to mikep in https://tex.stackexchange.com/a/279455
+
+\newcommand{\shrug}[1][]{%
+\begin{tikzpicture}[baseline,x=0.8\ht\strutbox,y=0.8\ht\strutbox,line width=0.125ex,#1]
+\def\arm{(-2.5,0.95) to (-2,0.95) (-1.9,1) to (-1.5,0) (-1.35,0) to (-0.8,0)};
+\draw \arm;
+\draw[xscale=-1] \arm;
+\def\headpart{(0.6,0) arc[start angle=-40, end angle=40,x radius=0.6,y radius=0.8]};
+\draw \headpart;
+\draw[xscale=-1] \headpart;
+\def\eye{(-0.075,0.15) .. controls (0.02,0) .. (0.075,-0.15)};
+\draw[shift={(-0.3,0.8)}] \eye;
+\draw[shift={(0,0.85)}] \eye;
+% draw mouth
+\draw (-0.1,0.2) to [out=15,in=-100] (0.4,0.95); 
+\end{tikzpicture}}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+\section{What are we trying to find out?}
+We have given a group of participants five different tests. We have split them into a test group that has been subjected to sleep deprivation and a control group that has not\footnote{At least not systematically, as part of the experiment. Sometimes people just sleep badly.}. After each test we asked them to estimate their own performance. We now want to find out how sleep deprivation affects their estimated performance.
+
+
+\newpage
+\section{What does the data look like?}
+There are six csv-files in the directory \verb+Data+\footnote{It is currently not in the repo. This may change in the future.}:
+\begin{itemize}
+\item \verb+kss_data.csv+
+\item \verb+arithmetic_data.csv+: Data from arithmetic test
+\item \verb+working_memory_data.csv+: Data from working memory test
+\item \verb+episodic_memory_data.csv+: Data from Episodic memory test
+\item \verb+Stroop_data.csv+: Data from Stroop test
+\item \verb+simple_attention_data.csv+: Data from simple reaction time test
+\end{itemize}
+At the moment, we only use the file \verb+kss_data.csv+. At time of writing I do not know what all columns are, so our best interpretation is this:
+\begin{itemize}
+\item \verb+id+: Participant ID
+\item \verb+age+: Participant age
+\item \verb+woman+: Participant gender
+\item \verb+sd+: Participant sleep status
+\item \verb+pair+: Participant pair for social interaction tasks
+\item \verb+dyad_type+: Combination of sleep status in dyad
+\item \verb+X1+: \shrug
+\item \verb+date+: Date of test
+\item \verb+clock+: Time of test
+\item \verb+order_t+: Test order for each session
+\item \verb+test_type+: Which cognitive test the participant just finished. This uses the abbreviations:
+\begin{itemize}
+\item \emph{M}: Arithmetic
+\item \emph{W}: Working memory
+\item \emph{ST}: Episodic memory
+\item \emph{stroop}: Stroop
+\item \emph{reactionTime}: Simple reaction time
+\end{itemize}
+\item \verb+rating1_type+: The type of rating in the column \verb+rating1+
+\item \verb+rating1+: Self-rated sleepiness after each test. That is, the participant's response to the question ``How sleepy are you right now?''
+\item \verb+rating2_type+: The type of rating in the column \verb+rating2+.
+\item \verb+rating2+: Self-rated effort on each test. That is, the participant's response to the question ``How much of an effort did you make?''
+\item \verb+rating3_type+: The type of rating in column \verb+rating1+
+\item \verb+rating3+: Self-rated performance on each test. That is, the participant's response to the question ``How did you perform?''
+\item \verb+time_adjustment_hours+: \shrug
+\item \verb+old_time+: \shrug
+\item \verb+correct+: This is a dummy column that can be ignored.
+\item \verb+time+: Order of the session in the test battery
+\end{itemize}
+For now, the columns of interest to us are \verb+id+, \verb+sd+ and \verb+rating3+. We want to know how self-rated effort depends on sleep status.
+
+
+\newpage
+\section{Mathematical model}
+In the article \emph{Too Tired to Know} we implement the cumulative model described in Bürkner and Vuorre (2019). The reader is primarily recommended to that article for the details, or -- once it is written -- the section in our article that explains the analysis. This is mostly written for myself to force myself to understand how the model works, since the root of at least half of all evil is the use of statistical recipes without first understanding them.
+
+\subsection{Basic idea}
+The cumulative model starts out from the assumption that the ordinal variable that we actually measure, $Y$, is an increasing function of some underlying unobservable variable $\tilde{Y}$. Specifically it assumes that there are $K$ thresholds $\tau_k$ such that if $\tau_{k-1} < \tilde{Y} < \tau_{k}$ then we will observe $Y = k$. The underlying $\tilde{Y}$ in turn follows some probability density function $f$ such that the probability $P \left( Y = k \right)$ is given by
+\begin{align}
+P \left( Y = k \right) &= \int_{\tau_{k-1}}^{\tau_k} f \left( \tilde{Y} \right)  d \tilde{Y} \label{eq_Pyk_integral}
+\intertext{If we call the corresponding cumulative density function $F$, this is}
+&= F\left( \tau_k \right) - F\left( \tau_{k-1} \right)
+\end{align}
+
+\subsection{Linear model of prediction term}
+So far the model is very general, but to get anywhere we need to make some assumptions about what the function $f$ actually looks like. We split $\tilde{Y}$ into a predictor term $\eta$ and an error term $\varepsilon$, so that
+\begin{align}
+\tilde{Y} &= \eta + \varepsilon \label{eq_terms}
+\intertext{We now assume that $\eta$ is a linear function, so that}
+\eta &= \sum_{n=0}^K b_n x_n \label{eq_linear}
+\intertext{Inserting \eqref{eq_linear} into \eqref{eq_terms} gives us}
+\tilde{Y} &= \sum_{n=0}^K b_n x_n + \varepsilon \label{eq_linear_2}
+\end{align}
+Since $d \tilde{Y} / d \varepsilon = 1$ we can rewrite \eqref{eq_Pyk_integral} as
+\begin{align}
+P \left( Y = k \right) &= \int_{\tau_{k-1}}^{\tau_k} f \left( \sum_{n=0}^K b_n x_n + \varepsilon \right)  d \varepsilon
+\intertext{Shifting the integration boundaries by the predictor term gives us}
+&= F \left( \tau_k - \sum_{n=0}^K b_n x_n \right) - F \left( \tau_{k-1} - \sum_{n=0}^K b_n x_n \right) \label{eq_linear_final}
+\end{align}
+
+\subsection{Normal model of error term}
+We now need some kind of model of what that error term looks like. To make life simpler\footnote{It is common to justify assumptions of normality with reference to the central limit theorem. I would argue that this often over-interprets the central limit theorem as being much broader than it actually is, and that the real reason why normal distributions get used so often is that they are just so very convenient.}, we assume that it is normally distributed. If we denote the CDF of the normal distribution with $\Phi$, then \eqref{eq_linear_final} takes the form:
+\begin{align}
+P \left( Y = k \right) &=
+\Phi \left( \tau_k - \sum_{n=0}^K b_n x_n \right) - \Phi \left( \tau_{k-1} - \sum_{n=0}^K b_n x_n \right)
+\end{align}
+This means we have a regression problem where we need to estimate the thresholds $\tau_k$ and $\tau_{k-1}$ and the regression coefficients $b_n$.
+
+
+
+
+
+\end{document}

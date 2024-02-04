@@ -1,13 +1,14 @@
-Codebook.xlsx
-/.Rhistory
+# Until the legal situation regarding the personal data in this directory has become clearer,
+# we should not make it public, even though we hope we will be able to.
 /Data
 
-/Documentation/Mathematical_details.aux
-/Documentation/Mathematical_details.log
-/Documentation/Mathematical_details.out
-/Documentation/Mathematical_details.synctex.gz
+# These are LaTeX aux files that would just take up space unnecessarily
+/Documentation/Documentation.out
+/Documentation/Documentation.synctex.gz
+/Documentation/Documentation.toc
+/Documentation/Documentation.aux
+/Documentation/Documentation.log
 
-/Documentation/What_is_the_code_doing?.log
-/Documentation/What_is_the_code_doing?.synctex.gz
-/Documentation/What_is_the_code_doing?.aux
-/Documentation/What_is_the_code_doing?.out
+# I consider the way R tries to save session data to be a terrible misfeature in any case,
+# and avoid using this even on my own computer.
+/.Rhistory
