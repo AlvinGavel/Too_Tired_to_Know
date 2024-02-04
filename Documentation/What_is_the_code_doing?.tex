@@ -1,0 +1,40 @@
+\documentclass[10pt, twoside,a4paper]{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{units}
+\usepackage{csquotes}
+\usepackage{sidenotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{What is the code doing?}
+\author{Alvin Gavel}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+The code is meant to, for each test type, go through the following:
+\begin{itemize}
+\item What test is this? This is in the column \emph{test\_type} in the file \emph{kss\_data.csv}, according to the abbreviations:
+\begin{itemize}
+\item \emph{M}: Arithmetic
+\item \emph{W}: Working memory
+\item \emph{ST}: Episodic memory
+\item \emph{stroop}: Stroop
+\item \emph{reactionTime}: Simple reaction time
+\end{itemize}
+\item Were the participants sleep deprived? This is in column \emph{sd} in the file \emph{kss\_data.csv}.
+\item How well did the participants estimate that they did? This is kept in column \emph{rating3} in the file \emph{kss\_data.csv}.
+\end{itemize}
+
+
+
+\end{document}
