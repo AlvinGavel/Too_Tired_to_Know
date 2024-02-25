@@ -38,6 +38,7 @@ summary(arit_test)
 dir.create('Plots', showWarnings = FALSE)
 
 
+png(filename="Plots/Control_group.png")
 plot(arit_merged[arit_merged$sd == 'Control',]$performance,
      arit_merged[arit_merged$sd == 'Control',]$rating3,
      main="Control group",
@@ -47,8 +48,10 @@ plot(arit_merged[arit_merged$sd == 'Control',]$performance,
      ylim=c(0,10),
      cex=0.1,
      pch=1)
+dev.off()
 
 
+png(filename="Plots/Test_group.png")
 plot(arit_merged[arit_merged$sd == 'Sleep Deprivation',]$performance,
      arit_merged[arit_merged$sd == 'Sleep Deprivation',]$rating3,
      main="Test group",
@@ -58,7 +61,7 @@ plot(arit_merged[arit_merged$sd == 'Sleep Deprivation',]$performance,
      ylim=c(0,10),
      cex=0.1,
      pch=1)
-
+dev.off()
 
 # TODO:
 # Main analysis defines performance as proportion correct, but make an additional
