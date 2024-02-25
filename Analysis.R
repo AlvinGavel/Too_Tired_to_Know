@@ -5,6 +5,7 @@ library(dplyr)
 kss = read.csv(file = 'Data/kss_data.csv')
 
 arit = read.csv(file = 'Data/arithmetic_data.csv')
+
 arit_processed = arit %>% group_by(ID, order_of_test) %>% summarize(performance = mean(correct))
 
 arit_merged <- merge(arit_processed,
@@ -15,6 +16,8 @@ arit_merged <- merge(arit_processed,
                      all.y=FALSE)
 
 # Here we will do the fitting of the cumulative model, following Bürkner and Vuorre
+
+
 
 arit_control <- brm(
   formula = rating3 ~ 1 + performance,
@@ -30,6 +33,31 @@ arit_test <- brm(
 
 summary(arit_control)
 summary(arit_test)
+
+
+dir.create('Plots', showWarnings = FALSE)
+
+
+plot(arit_merged[arit_merged$sd == 'Control',]$performance,
+     arit_merged[arit_merged$sd == 'Control',]$rating3,
+     main="Control group",
+     xlab="Actual performance",
+     ylab="Self-rated performance",
+     xlim=c(0.0,1.0),
+     ylim=c(0,10),
+     cex=0.1,
+     pch=1)
+
+
+plot(arit_merged[arit_merged$sd == 'Sleep Deprivation',]$performance,
+     arit_merged[arit_merged$sd == 'Sleep Deprivation',]$rating3,
+     main="Test group",
+     xlab="Actual performance",
+     ylab="Self-rated performance",
+     xlim=c(0.0,1.0),
+     ylim=c(0,10),
+     cex=0.1,
+     pch=1)
 
 
 # TODO:
