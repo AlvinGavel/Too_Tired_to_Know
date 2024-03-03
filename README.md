@@ -5,7 +5,8 @@ Study of the effects of sleep deprivation on metacognition
 Following Bürkner and Vourre (2019) we implement a cumulative model to analyse the results.
 
 ## Files
-- `Analysis.R`: The R code that runs the analysis.
+- `Binomial_analysis.R`: R code that makes a straightforward analysis of the data.
+- `Cumulative_model_analysis.R`: R code that makes an arguably more sophisticated, but also harder to interpret, analysis of the data.
 - `README.md`: This file.
 
 ## Directories

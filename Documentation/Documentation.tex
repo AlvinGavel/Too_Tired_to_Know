@@ -45,6 +45,14 @@
 \section{What are we trying to find out?}
 We have given a group of participants five different tests. We have split them into a test group that has been subjected to sleep deprivation and a control group that has not\footnote{At least not systematically, as part of the experiment. Sometimes people just sleep badly.}. After each test we asked them to estimate their own performance. We now want to find out how sleep deprivation affects their estimated performance.
 
+What complicates matters is that when the participants were asked to estimate how well they did, the participants were simply asked to rate their performance on a scale. This means that we have no straightforward way of checking how accurate their estimates are. If they had been asked to estimate what fraction of questions they got right, then we could straightforwardly say that, for example, someone who got $0.5$ right and estimates they got $0.8$ right did worse than someone who got $0.8$ right and estimates they got $0.9$ right. As it is, the first person might have estimated their performance as ``8'', and we simply do not know what -- in their mind -- that number was supposed to mean, which in turn means that we cannot say if it was close to their actual performance.
+
+In Sect.~\ref{sec_binomial} we look at a simple way of working around this problem, and in Sect.~\ref{sec_cumulative} at a method that is arguably more sophisticated but also much harder to interpret.
+
+
+
+
+
 
 \newpage
 \section{What does the data look like?}
@@ -92,7 +100,48 @@ For now, the columns of interest to us are \verb+id+, \verb+sd+ and \verb+rating
 
 
 \newpage
-\section{Mathematical model}
+\section{Simple binomial test}\label{sec_binomial}
+Instead of worrying about how to interpret what the participants' meant by the performance estimates they gave us, we simply look at how likely participants who gave a rating above the median are to also have performed above the median. That is, we have two binomial distribution with some probabilities $p^{\text{t}}_{\text{a, a}}$ and $p^{\text{c}}_{\text{a, a}}$, and we want to see if they differ enough for it to be clinically significant\footnote{A common mistake in this kind of study is to set up a ``null hypothesis'' that the two parameters are exactly the same, and then try to ``falsify'' that hypothesis by seeing if the difference is ``statistically significant''. Such a test is not scientifically meaningful. Since they are continuous parameters it is a priori given that they will differ my some amount, so that test would tell us nothing that we did not already know before we even gathered the data.}, where $t$ and $c$ denote the test and control group, respectively.
+
+\subsection{Why $p^{\text{x}}_{\text{a, a}}$ alone tells us what we need to know}
+We will only work with the probabilities $p^{\text{x}}_{\text{a, a}}$ that a participant in either group who had above-median performance also gave themselves an above-median rating, since this uniquely determines any other probabilities that we might be interested in. The corresponding probabilities $p^{\text{x}}_{\text{a, b}}$ that a person who performed above the median gave a rating below the median is trivially given by:
+\begin{align}
+p^{\text{x}}_{\text{a, b}} &= 1 - p^{\text{x}}_{\text{a, a}}.
+\intertext{If we use $n$ to denote the corresponding numbers of participants, then the probability is also definitionally given as}
+p^{\text{x}}_{\text{a, b}} &= \frac{n^{\text{x}}_{\text{a, b}}}{n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}}}. \label{eq_def_pxab}
+\intertext{Analogiously, the probability $p^{\text{x}}_{\text{1, a}}$ that a participant who performed above median rated themselves above median is given by:}
+p^{\text{x}}_{\text{a, a}} &= \frac{n^{\text{x}}_{\text{a, a}}}{n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}}}. \label{eq_def_pxaa}
+\intertext{Analoguously, the probability $p^{\text{x}}_{\text{b, a}}$ that a participant who performed below median rated themselves above median is given by:}
+p^{\text{x}}_{\text{b, a}} &= \frac{n^{\text{x}}_{\text{b, a}}}{n^{\text{x}}_{\text{b, a}} + n^{\text{x}}_{\text{b, b}}}. \label{eq_def_pxba}
+\intertext{Analoguously, the probability $p^{\text{x}}_{\text{b, b}}$ that a participant who performed below median rated themselves below median is given by:}
+p^{\text{x}}_{\text{b, b}} &= \frac{n^{\text{x}}_{\text{b, b}}}{n^{\text{x}}_{\text{b, a}} + n^{\text{x}}_{\text{b, b}}}. \label{eq_def_pxbb}
+\intertext{Definitionally, the number of participants who performed above and below median are equal:}
+n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}} &= n^{\text{x}}_{\text{b, a}} + n^{\text{x}}_{\text{b, b}} \label{eq_actual_perf}
+\intertext{Analoguously, the numbers of participants who rated themselves above and below median are equal:}
+n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{b, a}} &= n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{b, b}} \label{eq_rated_perf}
+\intertext{Adding both sides in \eqref{eq_actual_perf} and \eqref{eq_rated_perf} together and simplifying gives us:}
+%2 n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{b, a}} &= n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{b, a}} + 2n^{\text{x}}_{\text{b, b}} \notag \\
+%2 n^{\text{x}}_{\text{a, a}} &= 2n^{\text{x}}_{\text{b, b}} \notag \\
+n^{\text{x}}_{\text{a, a}} &= n^{\text{x}}_{\text{b, b}} \label{eq_naa_nbb}
+\intertext{Analoguously, substracting both sides in \eqref{eq_actual_perf} and \eqref{eq_rated_perf} and simplifying gives us:}
+%n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}} - n^{\text{x}}_{\text{a, a}} - n^{\text{x}}_{\text{b, a}} &= n^{\text{x}}_{\text{b, a}} + n^{\text{x}}_{\text{b, b}} - n^{\text{x}}_{\text{a, b}} - n^{\text{x}}_{\text{b, b}} \\
+%n^{\text{x}}_{\text{a, b}} - n^{\text{x}}_{\text{b, a}} &= n^{\text{x}}_{\text{b, a}} - n^{\text{x}}_{\text{a, b}}  \\
+% 2 n^{\text{x}}_{\text{a, b}} &= 2 n^{\text{x}}_{\text{b, a}} \\
+n^{\text{x}}_{\text{a, b}} &= n^{\text{x}}_{\text{b, a}} \label{eq_nab_nba}
+\intertext{Inserting \eqref{eq_naa_nbb} and \eqref{eq_nab_nba} into \eqref{eq_def_pxba} we get:}
+p^{\text{x}}_{\text{b, a}} &= \frac{n^{\text{x}}_{\text{a, b}}}{n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{a, a}}} \notag
+\intertext{Which, by \eqref{eq_def_pxab}, means that:}
+&= p^{\text{x}}_{\text{a, b}}.
+\intertext{Analogiously, inserting \eqref{eq_naa_nbb} and \eqref{eq_nab_nba} into \eqref{eq_def_pxba} gives us:}
+p^{\text{x}}_{\text{b, b}} &= \frac{n^{\text{x}}_{\text{a, a}}}{n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{a, a}}}
+\intertext{Which, by \eqref{eq_def_pxaa}, means that:}
+&= p^{\text{x}}_{\text{a, a}}.
+\end{align}
+
+
+
+\newpage
+\section{Cumulative model}\label{sec_cumulative}
 In the article \emph{Too Tired to Know} we implement the cumulative model described in Bürkner and Vuorre (2019). The reader is primarily recommended to that article for the details, or -- once it is written -- the section in our article that explains the analysis. This is mostly written for myself to force myself to understand how the model works, since the root of at least half of all evil is the use of statistical recipes without first understanding them.
 
 \subsection{Basic idea}
