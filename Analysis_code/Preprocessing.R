@@ -14,3 +14,15 @@ arit_merged <- merge(arit_processed,
                      by.y=c("id", "order_t"),
                      all.x=FALSE,
                      all.y=FALSE)
+
+arit_cont <- arit_merged[arit_merged$sd == 'Control',]
+arit_test <- arit_merged[arit_merged$sd == 'Sleep Deprivation',]
+
+n_cont <- nrow(arit_cont)
+n_test <- nrow(arit_test)
+
+median_performance_cont <- median(arit_cont$performance)
+median_performance_test <- median(arit_test$performance)
+
+median_rating_cont <- median(arit_cont$rating3)
+median_rating_test <- median(arit_test$rating3)
