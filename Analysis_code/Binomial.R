@@ -37,3 +37,11 @@ L_test <- L(sum(above_test), sum(below_test))
 
 plot(P_vector, L_cont)
 plot(P_vector, L_test)
+
+
+delta_steps = 2 * n_steps - 1
+delta_vector = linspace(-1., 1., delta_steps)
+
+delta = convolve(L_cont, L_test)
+
+plot(delta_vector, delta)
