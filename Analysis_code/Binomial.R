@@ -41,13 +41,17 @@ plot(P_vector, L_cont)
 plot(P_vector, L_test)
 
 
-delta_steps = 2 * n_steps - 1
-delta_vector = linspace(-1., 1., delta_steps)
+delta_steps <- 2 * n_steps - 1
+delta_vector <- linspace(-1., 1., delta_steps)
 
-delta = convolve(L_cont, L_test, type = 'open')
+delta <- convolve(L_cont, L_test, type = 'open')
 
+probability_mass <- integrate(approxfun(delta_vector, y = delta, method = "linear"), -1, 1)$value
+delta <- delta / probability_mass
+probability_insignificant <- integrate(approxfun(delta_vector, y = delta, method = "linear"), -clinical_significance, clinical_significance)$value
 
-
+print(paste0('The probability that the difference is NOT clinically significant is ', format(round(probability_insignificant * 100, 2), nsmall = 2), '%'))
+  
 plot(delta_vector, delta, type="l", lty = "solid", xlim=c(-1,1), ylim =c(0, max(delta)* 1.1), xaxs="i", yaxs="i")
 abline(v=clinical_significance, col="black", lty = "dashed")
 abline(v=-clinical_significance, col="black", lty = "dashed")
