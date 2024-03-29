@@ -16,14 +16,21 @@ arit_merged <- merge(arit_processed,
                      all.x=FALSE,
                      all.y=FALSE)
 
-arit_cont <- arit_merged[arit_merged$sd == 'Control',]
-arit_test <- arit_merged[arit_merged$sd == 'Sleep Deprivation',]
+arit_cont <- list()
+arit_test <- list()
+median_performance_cont <- list()
+median_performance_test <- list()
+median_rating_cont <- list()
+median_rating_test <- list()
 
-n_cont <- nrow(arit_cont)
-n_test <- nrow(arit_test)
+for (time in 1:3) {
+  arit_cont[[time]] <- arit_merged[arit_merged$sd == 'Control' & arit_merged$time == time,]
+  arit_test[[time]] <- arit_merged[arit_merged$sd == 'Sleep Deprivation' & arit_merged$time == time,]
+  
+  median_performance_cont[[time]] <- median(arit_cont[[time]]$performance)
+  median_performance_test[[time]] <- median(arit_test[[time]]$performance)
+  
+  median_rating_cont[[time]] <- median(arit_cont[[time]]$rating3)
+  median_rating_test[[time]] <- median(arit_test[[time]]$rating3)
+}
 
-median_performance_cont <- median(arit_cont$performance)
-median_performance_test <- median(arit_test$performance)
-
-median_rating_cont <- median(arit_cont$rating3)
-median_rating_test <- median(arit_test$rating3)
