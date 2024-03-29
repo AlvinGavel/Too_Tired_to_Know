@@ -1,5 +1,7 @@
 source('Preprocessing.R')
 
+clinical_significance = 0.1
+
 rating_above_median_cont <- arit_cont$rating3 >= median_rating_cont
 rating_below_median_cont <- arit_cont$rating3 < median_rating_cont
 performance_above_median_cont <- arit_cont$performance >= median_performance_cont
@@ -42,6 +44,10 @@ plot(P_vector, L_test)
 delta_steps = 2 * n_steps - 1
 delta_vector = linspace(-1., 1., delta_steps)
 
-delta = convolve(L_cont, L_test)
+delta = convolve(L_cont, L_test, type = 'open')
 
-plot(delta_vector, delta)
+
+
+plot(delta_vector, delta, type="l", lty = "solid", xlim=c(-1,1), ylim =c(0, max(delta)* 1.1), xaxs="i", yaxs="i")
+abline(v=clinical_significance, col="black", lty = "dashed")
+abline(v=-clinical_significance, col="black", lty = "dashed")
