@@ -3,34 +3,66 @@ library(dplyr)
 library(pracma)
 
 # Loading and pre-processing of data
-kss = read.csv(file = '../Data/kss_data.csv')
+kss <- read.csv(file = 'Data/kss_data.csv')
 
-arit = read.csv(file = '../Data/arithmetic_data.csv')
+datasets <- c('arithmetic',
+              'episodic memory',
+              'working memory',
+              'stroop',
+              'simple attention'
+)
 
-arit_processed = arit %>% group_by(ID, time) %>% summarize(performance = mean(correct))
+filenames <- c('arithmetic' = 'arithmetic_data.csv',
+               'episodic memory' = 'episodic_memory_data.csv',
+               'working memory' = 'working_memory_data.csv',
+               'stroop' = 'Stroop_data.csv',
+               'simple attention' = 'simple_attention_data.csv')
 
-arit_merged <- merge(arit_processed,
-                     kss[kss$test_type == 'M',],
-                     by.x=c("ID", "time"),
-                     by.y=c("id", "time"),
-                     all.x=FALSE,
-                     all.y=FALSE)
+performance_indicators <- c('arithmetic' = 'correct',
+                            'episodic memory' = 'correct',
+                            'working memory' = 'correct',
+                            'stroop' = 'correct', # It is possible that we want to use reaction_time here
+                            'simple attention' = 'reaction_time')
 
-arit_cont <- list()
-arit_test <- list()
-median_performance_cont <- list()
-median_performance_test <- list()
-median_rating_cont <- list()
-median_rating_test <- list()
+data_cont <- c()
+data_test <- c()
+median_performance_cont <- c()
+median_performance_test <- c()
+median_rating_cont <- c()
+median_rating_test <- c()
 
-for (time in 1:3) {
-  arit_cont[[time]] <- arit_merged[arit_merged$sd == 'Control' & arit_merged$time == time,]
-  arit_test[[time]] <- arit_merged[arit_merged$sd == 'Sleep Deprivation' & arit_merged$time == time,]
+for (i in 1:length(datasets)) {
+  dataset <- datasets[i]
+  print(paste0('Preprocessing ', dataset, ' data'))
+  dir.create(file.path('Plots', dataset), showWarnings = FALSE)
   
-  median_performance_cont[[time]] <- median(arit_cont[[time]]$performance)
-  median_performance_test[[time]] <- median(arit_test[[time]]$performance)
-  
-  median_rating_cont[[time]] <- median(arit_cont[[time]]$rating3)
-  median_rating_test[[time]] <- median(arit_test[[time]]$rating3)
+  performance_indicator <- as.character(performance_indicators[[dataset]])
+
+  data <- read.csv(file = paste0('Data/', filenames[[dataset]]))
+  data_processed <- data %>% group_by(ID, time) %>% summarize(performance = mean(.data[[performance_indicator]]))
+
+  data_merged <- merge(data_processed,
+                      kss[kss$test_type == 'M',],
+                      by.x=c("ID", "time"),
+                      by.y=c("id", "time"),
+                      all.x=FALSE,
+                      all.y=FALSE)
+
+
+  data_cont[[dataset]] <- list()
+  data_test[[dataset]] <- list()
+  median_performance_cont[[dataset]] <- list()
+  median_performance_test[[dataset]] <- list()
+  median_rating_cont[[dataset]] <- list()
+  median_rating_test[[dataset]] <- list()
+  for (time in 1:3) {
+    data_cont[[dataset]][[time]] <- data_merged[data_merged$sd == 'Control' & data_merged$time == time,]
+    data_test[[dataset]][[time]] <- data_merged[data_merged$sd == 'Sleep Deprivation' & data_merged$time == time,]
+
+    median_performance_cont[[dataset]][[time]] <- median(data_cont[[dataset]][[time]]$performance)
+    median_performance_test[[dataset]][[time]] <- median(data_test[[dataset]][[time]]$performance)
+
+    median_rating_cont[[dataset]][[time]] <- median(data_cont[[dataset]][[time]]$rating3)
+    median_rating_test[[dataset]][[time]] <- median(data_test[[dataset]][[time]]$rating3)
+  }
 }
-
