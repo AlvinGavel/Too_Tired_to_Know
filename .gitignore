@@ -14,10 +14,6 @@
 *.Rhistory
 /Plots/Control_group.png
 /Plots/Test_group.png
-/.idea/misc.xml
-/.idea/modules.xml
-/.idea/inspectionProfiles/profiles_settings.xml
-/.idea/Too_Tired_to_Know.iml
-/.idea/vcs.xml
-/.idea/workspace.xml
+/.idea
 .Rproj.user
+/Plots/

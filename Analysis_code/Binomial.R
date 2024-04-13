@@ -46,17 +46,19 @@ for (i in 1:length(datasets)) {
     frac_above_test <- n_above_test / (n_above_test + n_below_test)
 
     png(filename=paste0("Plots/", dataset, "/Performance.png"))
-    for (time in 1:3) {
-    plot(data_cont[[dataset]][[time]]$performance,
-         data_cont[[dataset]][[time]]$rating3,
+    plot(c(),
+         c(),
          main="Performance",
          xlab="Actual",
          ylab="Self-rated",
          xlim=performance_bounds[[dataset]],
-         ylim=c(0,10),
-         cex=0.1,
-         pch=1,
-         col=c("#0000FF"))
+         ylim=c(0,10))
+    for (time in 1:3) {
+      points(data_cont[[dataset]][[time]]$performance,
+             data_cont[[dataset]][[time]]$rating3,
+             cex=0.1,
+             pch=1,
+             col=c("#0000FF"))
       points(data_test[[dataset]][[time]]$performance,
          data_test[[dataset]][[time]]$rating3,
            cex=0.1,
