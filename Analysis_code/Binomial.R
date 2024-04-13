@@ -18,7 +18,10 @@ performance_bounds <- list('arithmetic' = c(0.0,1.0),
                         'episodic memory' = c(0.0,1.0),
                         'working memory' = c(0.0,1.0),
                         'stroop' = c(0.0,1.0),
-                        'simple attention' = c(100,10000))
+                        'simple attention' = c(100,1000))
+
+rating_bounds <- c(0,10)
+scatterplot_scatter <- 0.005
 
 for (i in 1:length(datasets)) {
     dataset = datasets[i]
@@ -52,18 +55,48 @@ for (i in 1:length(datasets)) {
          xlab="Actual",
          ylab="Self-rated",
          xlim=performance_bounds[[dataset]],
-         ylim=c(0,10))
+         ylim=rating_bounds,
+         cex=10)
     for (time in 1:3) {
-      points(data_cont[[dataset]][[time]]$performance,
-             data_cont[[dataset]][[time]]$rating3,
+      x_range <- performance_bounds[[dataset]][2] - performance_bounds[[dataset]][1]
+      y_range <- rating_bounds[2] - rating_bounds[1]
+      
+      cont_performance <- data_cont[[dataset]][[time]]$performance
+      cont_performance <- cont_performance + rnorm(length(cont_performance),
+                                                   mean=0,
+                                                   sd=x_range * scatterplot_scatter)
+      
+      cont_rating <- data_cont[[dataset]][[time]]$rating3
+      cont_rating <- cont_rating + rnorm(length(cont_rating),
+                                         mean=0,
+                                         sd=y_range * scatterplot_scatter)
+      
+      test_performance <- data_test[[dataset]][[time]]$performance
+      test_performance <- test_performance + rnorm(length(test_performance),
+                                                   mean=0,
+                                                   sd=x_range * scatterplot_scatter)
+      
+      test_rating <- data_test[[dataset]][[time]]$rating3
+      test_rating <- test_rating + rnorm(length(test_rating),
+                                         mean=0,
+                                         sd=y_range * scatterplot_scatter)
+            
+      points(cont_performance,
+             cont_rating,
              cex=0.1,
              pch=1,
              col=c("#0000FF"))
-      points(data_test[[dataset]][[time]]$performance,
-         data_test[[dataset]][[time]]$rating3,
-           cex=0.1,
-           pch=1,
-           col=c("#FF0033"))
+      points(test_performance,
+             test_rating,
+             cex=0.1,
+             pch=1,
+             col=c("#FF0033"))
+      legend(performance_bounds[[dataset]][1],
+             rating_bounds[1] + 0.1 * y_range,
+             legend=c("Control", "Test"),
+             cex=0.8,
+             pch=1,
+             col=c("#FF0033", "#0000FF"))
     }
     dev.off()
 
