@@ -34,7 +34,7 @@ rating_bounds <- c(0,10)
 scatterplot_scatter <- 0.005
 
 
-probability_insignificant <- c()
+P_insignificant <- c()
 for (i in 1:length(datasets)) {
   dataset = datasets[i]
   n_above_cont <- 0
@@ -119,14 +119,46 @@ for (i in 1:length(datasets)) {
   
   L_cont <- L(n_above_cont, n_below_cont, P_vector)
   L_test <- L(n_above_test, n_below_test, P_vector)
+  max_L = max(c(max(L_cont), max(L_test)))
+  
+  png(filename=paste0("Plots/", dataset, "/Metacognitive_performance.png"))
+  plot(c(),
+       c(),
+       main=dataset,
+       xlab="P",
+       ylab="p_(a,a)^x",
+       xlim=c(0,1),
+       ylim=c(0, max_L),
+       cex=10)
+  lines(P_vector,
+       L_cont,
+       type="l",
+       lty = "solid",
+       xaxs="i",
+       yaxs="i",
+       col=control_colour)
+  lines(P_vector,
+       L_test,
+       type="l",
+       lty = "solid",
+       xaxs="i",
+       yaxs="i",
+       col=test_colour)
+  legend(0,
+         max_L,
+         legend=c("Control", "Test"),
+         cex=0.8,
+         pch=1,
+         col=c(control_colour, test_colour))
+  dev.off()
   
   p_delta <- convolve(L_cont, L_test, type = 'open')
   
   probability_mass <- integrate(approxfun(delta, y = p_delta, method = "linear"), -1, 1)$value
   p_delta <- p_delta / probability_mass
-  probability_insignificant[[dataset]] <- integrate(approxfun(delta, y = p_delta, method = "linear"), -clinical_significance, clinical_significance)$value
+  P_insignificant[[dataset]] <- integrate(approxfun(delta, y = p_delta, method = "linear"), -clinical_significance, clinical_significance)$value
   
-  print(paste0('For ', dataset, ' the probability that the difference is NOT clinically significant is ', format(round(probability_insignificant[[dataset]] * 100, 2), nsmall = 2), '%'))
+  print(paste0('For ', dataset, ' the probability that the difference is NOT clinically significant is ', format(round(P_insignificant[[dataset]] * 100, 2), nsmall = 2), '%'))
   
   png(filename=paste0("Plots/", dataset, "/Difference.png"))
   plot(delta,
@@ -141,3 +173,4 @@ for (i in 1:length(datasets)) {
   abline(v=-clinical_significance, col="black", lty = "dashed")
   dev.off()
 }
+

@@ -51,7 +51,111 @@ We can work around this problem if we assume that if people had perfectly accura
 
 However, we need to point out that there is a criticism that could be made of this underlying assumption. It assumes that the participants are trying to grade themselves on a universal scale. It could be that they are only trying to rate their performance on that particular day to how they would ordinarily expect to perform -- or, more likely, that they are trying to do something that is difficult to express in well-defined mathematical terms.
 
-In Sect.~\ref{sec_cumulative} at a method that is arguably more sophisticated but also much harder to interpret.
+
+
+\newpage
+\section{Simple binomial test}\label{sec_binomial}
+Our approach is intended to sidestep the question of how to interpret what the participants meant by the performance estimates they gave us, by attempting to cover all interpretations that are compatible with any reasonable definition of `metacognitive skill'.
+
+Indexing participants by $i$ and test attempts by $k$, we look at how likely participants who gave themselves a rating~$r_{i, k}$ above the median rating~$\tilde{r}_k$ are to also have an actual performance~$a_i$ above the median performance~$\tilde{a}_k$. We denote the probability that a participant in the control group will both rate themselves above the median rating as $P^{\text{t}}_{\text{a, a}}$, and the corresponding probability for a participant in the test group with $P^{\text{c}}_{\text{a, a}}$. If we need to refer to them we will denote the probability that a test-group participant who rated themselves above the median actually performed below the median with $P^{\text{t}}_{\text{a, b}}$, and analoguously for the other five combinations of group, rating and performance. However, as we will see in Sect.~\ref{sec_information_content}, for each group one of the four probabilities uniquely determines the other three, so we should not need to refer to them explicitly. We also define $n^c_{\text{a, a}}$ to mean the number of participants in the control group who rated themselves above the median and actually performed above the median, and analogously for the test group and ratings and performance below the median.
+
+The parameters $P^{\text{t}}_{\text{a, a}}$ and $P^{\text{c}}_{\text{a, a}}$ each define a binomial distribution, and by fitting them to the data we will get two probability distributions over the parameters, as described in Sect.~\ref{sec_fitting}. By convolving the two distributions we get the probability distribution over their difference $D_{\text{a, a}}$, as described in Sect.~\ref{sec_difference}. By integrating over a segment of that distribution we can get the probability they differ enough for it to be clinically significant\footnote{A common mistake in this kind of study is to set up a ``null hypothesis'' that the two parameters are exactly the same, and then try to ``falsify'' that hypothesis by seeing if the difference is ``statistically significant''. Such a test is not scientifically meaningful. Since they are continuous parameters it is a priori given that they will differ my some amount, so that test would tell us nothing that we did not already know before we even gathered the data.}, as described in Sect.~\ref{sec_significance}.
+ 
+\newpage
+\subsection{Binomial fitting}\label{sec_fitting}
+The binomial distribution describes any random process equivalent to flipping a weighted coin. That is, there are two outcomes $h$ and $t$ and some probability $P_h$ of getting $h$ and $P_t = 1-P_h$ of getting $t$. If you take $n$ samples, then the likelihood $P \left( n_h | n, P_h \right)$ of getting $n_h$ cases of outcome $h$ and $n_t = n - n_h$ cases of outcome $t$ is given by:
+\begin{align}
+P \left( n_h | n, P_h \right) &= 
+\left(
+\begin{aligned}
+n_h \\
+n\\
+\end{aligned}
+\right)
+P_h^{n_h} \left( 1 - P_h\right )^{n - n_h} \label{eq_likelihood}
+\intertext{where}
+\left(
+\begin{aligned}
+n_h \\
+n\\
+\end{aligned}
+\right) &\equiv
+\frac{n!}{n_h! \left( n - n_h \right)!} \notag
+\end{align}
+Now, say that $P_h$ is unknown and that we want to estimate it based on these samples. By Bayes' theorem, the probability density $p \left( P_h | n, n_h \right)$ for any particular value $P_h$ is given by:
+\begin{align}
+p \left( P_h | n, n_h \right) &=
+\frac{P \left( n_h | n, P_h \right) p \left( P_h \right) }{ P \left( n_h | n \right) }
+\label{eq_bayes_definition}
+\end{align}
+where $p \left( P_h \right)$ is the prior probability density over $P_h$ and $P \left( n_h | n \right)$ is a normalisation factor. To make our life simpler we choose a flat prior. With a bit of work it can be shown that if insert this prior and \eqref{eq_likelihood} into \eqref{eq_bayes_definition} and require the distribution to be normalised then we end up with:
+\begin{align}
+p \left( P_h | n, n_h \right) &=
+\frac{ P_h^{n_h} \left( 1 - P_h\right )^{n - n_h} }
+{B \left( n_h +1, n - n_h + 1 \right)} \notag
+\intertext{where}
+B \left( \alpha, \beta \right) &\equiv
+\frac{\Gamma \left( \alpha \right) \Gamma \left( \beta \right)}{\Gamma \left( \alpha + \beta \right)} \notag
+\intertext{and $\Gamma$ is the gamma function. Switching to the bulkier notation defined in the beginning of Sect.~\ref{sec_binomial}, we get:}
+p \left( P^{\text{x}}_{\text{a, a}} | n^x_{\text{a, a}}, n^x_{\text{a, b}} \right) &=
+\frac{ \left( P^{\text{t}}_{\text{a, a}} \right)^{n^x_{\text{a, a}}} \left( 1 - P^{\text{t}}_{\text{a, a}} \right )^{ n^x_{\text{a, b}}} }
+{B \left( n^x_{\text{a, a}} +1, n^x_{\text{a, b}} + 1 \right)} \label{eq_posterior}
+\end{align}
+where $x$ denotes $t$ or $c$.
+
+\newpage
+\subsection{Finding the distribution over the difference}\label{sec_difference}
+Now, we are not interested in the probabilities $P^{\text{c}}_{\text{a, a}}$ and $P^{\text{t}}_{\text{a, a}}$ in themselves. For the purposes of our study we are only interested in the difference $D_{\text{a, a}}$ between them. It turns out that we can get the probability distribution $p \left( D_{\text{a, a}} \right)$ over this difference simply by convolving the probability distributions $p \left( P^{\text{c}}_{\text{a, a}} | n^c_{\text{a, a}}, n^c_{\text{a, b}} \right)$ and $p \left( P^{\text{t}}_{\text{a, a}} | n^{\text{t}}_{\text{a, a}}, n^{\text{t}}_{\text{a, b}} \right)$.
+
+
+\newpage
+\subsection{Probability of clinical significance}\label{sec_significance}
+Once we have the probability distribution $p \left( D_{\text{a, a}} \right)$, the probability that the difference is clinically significant is given by simply by integrating between our bounds for clinical significance.
+
+
+\newpage
+\subsection{Why $P^{\text{x}}_{\text{a, a}}$ alone tells us all we need to know} \label{sec_information_content}
+We will only work with the probabilities $P^{\text{x}}_{\text{a, a}}$ that a participant in either group who had above-median performance also gave themselves an above-median rating, since this uniquely determines any other probabilities that we might be interested in. The corresponding probabilities $P^{\text{x}}_{\text{a, b}}$ that a person who performed above the median gave a rating below the median is trivially given by:
+\begin{align}
+P^{\text{x}}_{\text{a, b}} &= 1 - P^{\text{x}}_{\text{a, a}}.
+\intertext{If we use $n$ to denote the corresponding numbers of participants, then the probability is also definitionally given as}
+P^{\text{x}}_{\text{a, b}} &= \frac{n^{\text{x}}_{\text{a, b}}}{n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}}}. \label{eq_def_pxab}
+\intertext{Analogiously, the probability $P^{\text{x}}_{\text{1, a}}$ that a participant who performed above median rated themselves above median is given by:}
+P^{\text{x}}_{\text{a, a}} &= \frac{n^{\text{x}}_{\text{a, a}}}{n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}}}. \label{eq_def_pxaa}
+\intertext{Analoguously, the probability $P^{\text{x}}_{\text{b, a}}$ that a participant who performed below median rated themselves above median is given by:}
+P^{\text{x}}_{\text{b, a}} &= \frac{n^{\text{x}}_{\text{b, a}}}{n^{\text{x}}_{\text{b, a}} + n^{\text{x}}_{\text{b, b}}}. \label{eq_def_pxba}
+\intertext{Analoguously, the probability $P^{\text{x}}_{\text{b, b}}$ that a participant who performed below median rated themselves below median is given by:}
+P^{\text{x}}_{\text{b, b}} &= \frac{n^{\text{x}}_{\text{b, b}}}{n^{\text{x}}_{\text{b, a}} + n^{\text{x}}_{\text{b, b}}}. \label{eq_def_pxbb}
+\intertext{Definitionally, the number of participants who performed above and below median are equal:}
+n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}} &= n^{\text{x}}_{\text{b, a}} + n^{\text{x}}_{\text{b, b}} \label{eq_actual_perf}
+\intertext{Analoguously, the numbers of participants who rated themselves above and below median are equal:}
+n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{b, a}} &= n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{b, b}} \label{eq_rated_perf}
+\intertext{Adding both sides in \eqref{eq_actual_perf} and \eqref{eq_rated_perf} together and simplifying gives us:}
+%2 n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{b, a}} &= n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{b, a}} + 2n^{\text{x}}_{\text{b, b}} \notag \\
+%2 n^{\text{x}}_{\text{a, a}} &= 2n^{\text{x}}_{\text{b, b}} \notag \\
+n^{\text{x}}_{\text{a, a}} &= n^{\text{x}}_{\text{b, b}} \label{eq_naa_nbb}
+\intertext{Analoguously, substracting both sides in \eqref{eq_actual_perf} and \eqref{eq_rated_perf} and simplifying gives us:}
+%n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}} - n^{\text{x}}_{\text{a, a}} - n^{\text{x}}_{\text{b, a}} &= n^{\text{x}}_{\text{b, a}} + n^{\text{x}}_{\text{b, b}} - n^{\text{x}}_{\text{a, b}} - n^{\text{x}}_{\text{b, b}} \\
+%n^{\text{x}}_{\text{a, b}} - n^{\text{x}}_{\text{b, a}} &= n^{\text{x}}_{\text{b, a}} - n^{\text{x}}_{\text{a, b}}  \\
+% 2 n^{\text{x}}_{\text{a, b}} &= 2 n^{\text{x}}_{\text{b, a}} \\
+n^{\text{x}}_{\text{a, b}} &= n^{\text{x}}_{\text{b, a}} \label{eq_nab_nba}
+\intertext{Inserting \eqref{eq_naa_nbb} and \eqref{eq_nab_nba} into \eqref{eq_def_pxba} we get:}
+P^{\text{x}}_{\text{b, a}} &= \frac{n^{\text{x}}_{\text{a, b}}}{n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{a, a}}} \notag
+\intertext{Which, by \eqref{eq_def_pxab}, means that:}
+&= P^{\text{x}}_{\text{a, b}}.
+\intertext{Analogiously, inserting \eqref{eq_naa_nbb} and \eqref{eq_nab_nba} into \eqref{eq_def_pxba} gives us:}
+P^{\text{x}}_{\text{b, b}} &= \frac{n^{\text{x}}_{\text{a, a}}}{n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{a, a}}}
+\intertext{Which, by \eqref{eq_def_pxaa}, means that:}
+&= P^{\text{x}}_{\text{a, a}}.
+\end{align}
+That said, there is a quicker way one could reach the same conclusion. We imagine starting out from an ideal state where everybody rates themselves with perfect accuracy. In this case, it is trivially true that $P^{\text{x}}_{\text{a, a}} = P^{\text{x}}_{\text{b, b}}$ because they are both $1$, while $P^{\text{x}}_{\text{a, b}} = P^{\text{x}}_{\text{b, a}}$ because they are both $0$. Now we imagine taking one person who performed above the median and shifting their rating from above to below the median. This moves the median rating in such a way that one person who performed below the median will now have a rating above the median. We can shift people around as much as we like, and the change to $P^{\text{x}}_{\text{a, a}}$ will equal the change in $P^{\text{x}}_{\text{b, b}}$ and the change in $P^{\text{x}}_{\text{a, b}}$ will equal the change in $P^{\text{x}}_{\text{b, a}}$. Completely analogous reasoning can be applied to shifting the actual performance instead of the rating. As a result, the equalities $P^{\text{x}}_{\text{a, a}} = p^{\text{x}}_{\text{b, b}}$ and $P^{\text{x}}_{\text{a, b}} = P^{\text{x}}_{\text{b, a}}$ will still hold no matter how we shift people around.
+
+
+\newpage
+\subsection{How to estimate the medians $\tilde{r}$ and $\tilde{a}$}
+The distributions of ratings $r$ and actual performances $a$ follow distributions that have some medians~$\tilde{r}$ and~$\tilde{a}$. We cannot access those numbers directly, but we can estimate them by taking the medians over the samples $r_i$ and $a_i$ that we actually got in the study. This leads to the question: Should we estimate separate medians for the control and test groups based on the samples for each group, or should we use a shared median for both groups?
+
+I believe that taking separate medians for both groups is more robust to violations of the assumptions behind our analysis. There could be an overall shift between the medians of the distribution that is not due to the participants' metacognitive skill changing, but due to some difference in how they perceive the framing of the question. If we looked at a shared median for both group, we would risk confusing such an effect for a change in metacognitive skill. However, if we see that ratings are much noisier in one group than in the other, it is hard to argue that that does not reflect a genuine lowering of metacognitive skill.
 
 
 
@@ -69,7 +173,7 @@ There are six csv-files in the directory \verb+Data+\footnote{It is currently no
 \item \verb+Stroop_data.csv+: Data from Stroop test
 \item \verb+simple_attention_data.csv+: Data from simple reaction time test
 \end{itemize}
-At the moment, we only use the file \verb+kss_data.csv+. At time of writing I do not know what all columns are, so our best interpretation is this:
+The files with data for each test each need to be combined with \verb+kss_data.csv+. At time of writing I do not know what all columns are, so our best interpretation is this:
 \begin{itemize}
 \item \verb+id+: Participant ID
 \item \verb+age+: Participant age
@@ -101,99 +205,5 @@ At the moment, we only use the file \verb+kss_data.csv+. At time of writing I do
 \item \verb+time+: Order of the session in the test battery
 \end{itemize}
 For now, the columns of interest to us are \verb+id+, \verb+sd+ and \verb+rating3+. We want to know how self-rated effort depends on sleep status.
-
-
-\newpage
-\section{Simple binomial test}\label{sec_binomial}
-Our approach is intended to sidestep the question of how to interpret what the participants' meant by the performance estimates they gave us, by attempting to cover all interpretations that are compatible with any reasonable definition of `metacognitive skill'.
-
-Indexing participants by $i$ and test attempts by $k$, we look at how likely participants who gave themselves a rating~$r_{i, k}$ above the median rating~$\tilde{r}_k$ are to also have an actual performance~$a_i$ above the median performance~$\tilde{a}_k$. We denote the probability that a participant in the control group will both rate themselves above the median rating as $p^{\text{t}}_{\text{a, a}}$, and the corresponding probability for a participant in the test group with $p^{\text{c}}_{\text{a, a}}$. If we need to refer to them we will denote the probability that a test-group participant who rated themselves above the median actually performed below the median with $p^{\text{t}}_{\text{a, b}}$, and analoguously for the other five combinations of group, rating and performance. However, as we will see in Sect.~\ref{sec_information_content}, for each group one of the four probabilities uniquely determines the other three, so we should not need to refer to them explicitly.
-
-The parameters $p^{\text{t}}_{\text{a, a}}$ and $p^{\text{c}}_{\text{a, a}}$ each define a binomial distribution, and by fitting them to the data we will get two probability distributions over the parameters. By convolving the two distributions we get the probability distribution over their difference $d_{\text{a, a}}$. By integrating over a segment of that distribution we can get the probability they differ enough for it to be clinically significant\footnote{A common mistake in this kind of study is to set up a ``null hypothesis'' that the two parameters are exactly the same, and then try to ``falsify'' that hypothesis by seeing if the difference is ``statistically significant''. Such a test is not scientifically meaningful. Since they are continuous parameters it is a priori given that they will differ my some amount, so that test would tell us nothing that we did not already know before we even gathered the data.}.
- 
-
-\subsection{Why $p^{\text{x}}_{\text{a, a}}$ alone tells us all we need to know} \label{sec_information_content}
-We will only work with the probabilities $p^{\text{x}}_{\text{a, a}}$ that a participant in either group who had above-median performance also gave themselves an above-median rating, since this uniquely determines any other probabilities that we might be interested in. The corresponding probabilities $p^{\text{x}}_{\text{a, b}}$ that a person who performed above the median gave a rating below the median is trivially given by:
-\begin{align}
-p^{\text{x}}_{\text{a, b}} &= 1 - p^{\text{x}}_{\text{a, a}}.
-\intertext{If we use $n$ to denote the corresponding numbers of participants, then the probability is also definitionally given as}
-p^{\text{x}}_{\text{a, b}} &= \frac{n^{\text{x}}_{\text{a, b}}}{n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}}}. \label{eq_def_pxab}
-\intertext{Analogiously, the probability $p^{\text{x}}_{\text{1, a}}$ that a participant who performed above median rated themselves above median is given by:}
-p^{\text{x}}_{\text{a, a}} &= \frac{n^{\text{x}}_{\text{a, a}}}{n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}}}. \label{eq_def_pxaa}
-\intertext{Analoguously, the probability $p^{\text{x}}_{\text{b, a}}$ that a participant who performed below median rated themselves above median is given by:}
-p^{\text{x}}_{\text{b, a}} &= \frac{n^{\text{x}}_{\text{b, a}}}{n^{\text{x}}_{\text{b, a}} + n^{\text{x}}_{\text{b, b}}}. \label{eq_def_pxba}
-\intertext{Analoguously, the probability $p^{\text{x}}_{\text{b, b}}$ that a participant who performed below median rated themselves below median is given by:}
-p^{\text{x}}_{\text{b, b}} &= \frac{n^{\text{x}}_{\text{b, b}}}{n^{\text{x}}_{\text{b, a}} + n^{\text{x}}_{\text{b, b}}}. \label{eq_def_pxbb}
-\intertext{Definitionally, the number of participants who performed above and below median are equal:}
-n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}} &= n^{\text{x}}_{\text{b, a}} + n^{\text{x}}_{\text{b, b}} \label{eq_actual_perf}
-\intertext{Analoguously, the numbers of participants who rated themselves above and below median are equal:}
-n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{b, a}} &= n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{b, b}} \label{eq_rated_perf}
-\intertext{Adding both sides in \eqref{eq_actual_perf} and \eqref{eq_rated_perf} together and simplifying gives us:}
-%2 n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{b, a}} &= n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{b, a}} + 2n^{\text{x}}_{\text{b, b}} \notag \\
-%2 n^{\text{x}}_{\text{a, a}} &= 2n^{\text{x}}_{\text{b, b}} \notag \\
-n^{\text{x}}_{\text{a, a}} &= n^{\text{x}}_{\text{b, b}} \label{eq_naa_nbb}
-\intertext{Analoguously, substracting both sides in \eqref{eq_actual_perf} and \eqref{eq_rated_perf} and simplifying gives us:}
-%n^{\text{x}}_{\text{a, a}} + n^{\text{x}}_{\text{a, b}} - n^{\text{x}}_{\text{a, a}} - n^{\text{x}}_{\text{b, a}} &= n^{\text{x}}_{\text{b, a}} + n^{\text{x}}_{\text{b, b}} - n^{\text{x}}_{\text{a, b}} - n^{\text{x}}_{\text{b, b}} \\
-%n^{\text{x}}_{\text{a, b}} - n^{\text{x}}_{\text{b, a}} &= n^{\text{x}}_{\text{b, a}} - n^{\text{x}}_{\text{a, b}}  \\
-% 2 n^{\text{x}}_{\text{a, b}} &= 2 n^{\text{x}}_{\text{b, a}} \\
-n^{\text{x}}_{\text{a, b}} &= n^{\text{x}}_{\text{b, a}} \label{eq_nab_nba}
-\intertext{Inserting \eqref{eq_naa_nbb} and \eqref{eq_nab_nba} into \eqref{eq_def_pxba} we get:}
-p^{\text{x}}_{\text{b, a}} &= \frac{n^{\text{x}}_{\text{a, b}}}{n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{a, a}}} \notag
-\intertext{Which, by \eqref{eq_def_pxab}, means that:}
-&= p^{\text{x}}_{\text{a, b}}.
-\intertext{Analogiously, inserting \eqref{eq_naa_nbb} and \eqref{eq_nab_nba} into \eqref{eq_def_pxba} gives us:}
-p^{\text{x}}_{\text{b, b}} &= \frac{n^{\text{x}}_{\text{a, a}}}{n^{\text{x}}_{\text{a, b}} + n^{\text{x}}_{\text{a, a}}}
-\intertext{Which, by \eqref{eq_def_pxaa}, means that:}
-&= p^{\text{x}}_{\text{a, a}}.
-\end{align}
-That said, there is a quicker way one could reach the same conclusion. We imagine starting out from an ideal state where everybody rates themselves with perfect accuracy. In this case, it is trivially true that $p^{\text{x}}_{\text{a, a}} = p^{\text{x}}_{\text{b, b}}$ because they are both $1$, while $p^{\text{x}}_{\text{a, b}} = p^{\text{x}}_{\text{b, a}}$ because they are both $0$. Now we imagine taking one person who performed above the median and shifting their rating from above to below the median. This moves the median rating in such a way that one person who performed below the median will now have a rating above the median. We can shift people around as much as we like, and the change to $p^{\text{x}}_{\text{a, a}}$ will equal the change in $p^{\text{x}}_{\text{b, b}}$ and the change in $p^{\text{x}}_{\text{a, b}}$ will equal the change in $p^{\text{x}}_{\text{b, a}}$. Completely analogous reasoning can be applied to shifting the actual performance instead of the rating. As a result, the equalities $p^{\text{x}}_{\text{a, a}} = p^{\text{x}}_{\text{b, b}}$ and $p^{\text{x}}_{\text{a, b}} = p^{\text{x}}_{\text{b, a}}$ will still hold no matter how we shift people around.
-
-\subsection{How to estimate the medians $\tilde{r}$ and $\tilde{a}$}
-The distributions of ratings $r$ and actual performances $a$ follow distributions that have some medians~$\tilde{r}$ and~$\tilde{a}$. We cannot access those numbers directly, but we can estimate them by taking the medians over the samples $r_i$ and $a_i$ that we actually got in the study. This leads to the question: Should we estimate separate medians for the control and test groups based on the samples for each group, or should we use a shared median for both groups?
-
-I believe that taking separate medians for both groups is more robust to violations of the assumptions behind our analysis. There could be an overall shift between the medians of the distribution that is not due to the participants' metacognitive skill changing, but due to some difference in how they perceive the framing of the question. If we looked at a shared median for both group, we would risk confusing such an effect for a change in metacognitive skill. However, if we see that ratings are much noisier in one group than in the other, it is hard to argue that that does not reflect a genuine lowering of metacognitive skill.
-
-
-
-
-\newpage
-\section{Cumulative model}\label{sec_cumulative}
-In the article \emph{Too Tired to Know} we implement the cumulative model described in Bürkner and Vuorre (2019). The reader is primarily recommended to that article for the details, or -- once it is written -- the section in our article that explains the analysis. This is mostly written for myself to force myself to understand how the model works, since the root of at least half of all evil is the use of statistical recipes without first understanding them.
-
-\subsection{Basic idea}
-The cumulative model starts out from the assumption that the ordinal variable that we actually measure, $Y$, is an increasing function of some underlying unobservable variable $\tilde{Y}$. Specifically it assumes that there are $K$ thresholds $\tau_k$ such that if $\tau_{k-1} < \tilde{Y} < \tau_{k}$ then we will observe $Y = k$. The underlying $\tilde{Y}$ in turn follows some probability density function $f$ such that the probability $P \left( Y = k \right)$ is given by
-\begin{align}
-P \left( Y = k \right) &= \int_{\tau_{k-1}}^{\tau_k} f \left( \tilde{Y} \right)  d \tilde{Y} \label{eq_Pyk_integral}
-\intertext{If we call the corresponding cumulative density function $F$, this is}
-&= F\left( \tau_k \right) - F\left( \tau_{k-1} \right)
-\end{align}
-
-\subsection{Linear model of prediction term}
-So far the model is very general, but to get anywhere we need to make some assumptions about what the function $f$ actually looks like. We split $\tilde{Y}$ into a predictor term $\eta$ and an error term $\varepsilon$, so that
-\begin{align}
-\tilde{Y} &= \eta + \varepsilon \label{eq_terms}
-\intertext{We now assume that $\eta$ is a linear function, so that}
-\eta &= \sum_{n=0}^K b_n x_n \label{eq_linear}
-\intertext{Inserting \eqref{eq_linear} into \eqref{eq_terms} gives us}
-\tilde{Y} &= \sum_{n=0}^K b_n x_n + \varepsilon \label{eq_linear_2}
-\end{align}
-Since $d \tilde{Y} / d \varepsilon = 1$ we can rewrite \eqref{eq_Pyk_integral} as
-\begin{align}
-P \left( Y = k \right) &= \int_{\tau_{k-1}}^{\tau_k} f \left( \sum_{n=0}^K b_n x_n + \varepsilon \right)  d \varepsilon
-\intertext{Shifting the integration boundaries by the predictor term gives us}
-&= F \left( \tau_k - \sum_{n=0}^K b_n x_n \right) - F \left( \tau_{k-1} - \sum_{n=0}^K b_n x_n \right) \label{eq_linear_final}
-\end{align}
-
-\subsection{Normal model of error term}
-We now need some kind of model of what that error term looks like. To make life simpler\footnote{It is common to justify assumptions of normality with reference to the central limit theorem. I would argue that this often over-interprets the central limit theorem as being much broader than it actually is, and that the real reason why normal distributions get used so often is that they are just so very convenient.}, we assume that it is normally distributed. If we denote the CDF of the normal distribution with $\Phi$, then \eqref{eq_linear_final} takes the form:
-\begin{align}
-P \left( Y = k \right) &=
-\Phi \left( \tau_k - \sum_{n=0}^K b_n x_n \right) - \Phi \left( \tau_{k-1} - \sum_{n=0}^K b_n x_n \right)
-\end{align}
-This means we have a regression problem where we need to estimate the thresholds $\tau_k$ and $\tau_{k-1}$ and the regression coefficients $b_n$.
-
-
-
-
 
 \end{document}

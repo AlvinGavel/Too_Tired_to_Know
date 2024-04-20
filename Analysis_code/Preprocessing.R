@@ -30,6 +30,8 @@ median_performance_cont <- c()
 median_performance_test <- c()
 median_rating_cont <- c()
 median_rating_test <- c()
+median_sleepiness_cont <- c()
+median_sleepiness_test <- c()
 
 for (i in 1:length(datasets)) {
   dataset <- datasets[i]
@@ -55,6 +57,8 @@ for (i in 1:length(datasets)) {
   median_performance_test[[dataset]] <- list()
   median_rating_cont[[dataset]] <- list()
   median_rating_test[[dataset]] <- list()
+  median_sleepiness_cont[[dataset]] <- list()
+  median_sleepiness_test[[dataset]] <- list()
   for (time in 1:3) {
     data_cont[[dataset]][[time]] <- data_merged[data_merged$sd == 'Control' & data_merged$time == time,]
     data_test[[dataset]][[time]] <- data_merged[data_merged$sd == 'Sleep Deprivation' & data_merged$time == time,]
@@ -64,5 +68,8 @@ for (i in 1:length(datasets)) {
 
     median_rating_cont[[dataset]][[time]] <- median(data_cont[[dataset]][[time]]$rating3)
     median_rating_test[[dataset]][[time]] <- median(data_test[[dataset]][[time]]$rating3)
+    
+    median_sleepiness_cont[[dataset]][[time]] <- median(data_cont[[dataset]][[time]]$rating1)
+    median_sleepiness_test[[dataset]][[time]] <- median(data_test[[dataset]][[time]]$rating1)
   }
 }
