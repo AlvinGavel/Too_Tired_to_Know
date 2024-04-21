@@ -33,6 +33,7 @@ median_rating_test <- c()
 median_sleepiness_cont <- c()
 median_sleepiness_test <- c()
 
+dir.create('Plots', showWarnings = FALSE)
 for (i in 1:length(datasets)) {
   dataset <- datasets[i]
   print(paste0('Preprocessing ', dataset, ' data'))
@@ -49,7 +50,6 @@ for (i in 1:length(datasets)) {
                       by.y=c("id", "time"),
                       all.x=FALSE,
                       all.y=FALSE)
-
 
   data_cont[[dataset]] <- list()
   data_test[[dataset]] <- list()
