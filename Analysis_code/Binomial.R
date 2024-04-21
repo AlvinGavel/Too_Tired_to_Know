@@ -34,7 +34,9 @@ rating_bounds <- c(0,10)
 sleepiness_bounds <- c(0, 9)
 scatterplot_scatter <- 0.005
 
-P_insignificant <- c()
+P_significant_negative <- c()
+P_significant_positive <- c()
+P_significant_double <- c()
 for (i in 1:length(datasets)) {
   print(paste0('For ', dataset, ':'))
   dataset <- datasets[i]
@@ -149,15 +151,24 @@ for (i in 1:length(datasets)) {
            pch=1,
            col=c(colours[['control']], colours[['test']]))
     dev.off()
-    
-    p_delta <- convolve(L_cont, L_test, type = 'open')
+
+    # Test - control
+    p_delta <- convolve(L_test, L_cont, type = 'open')
     
     probability_mass <- integrate(approxfun(delta, y = p_delta, method = "linear"), -1, 1)$value
     p_delta <- p_delta / probability_mass
-    P_insignificant[[dataset]] <- integrate(approxfun(delta, y = p_delta, method = "linear"), -clinical_significance, clinical_significance)$value
+    P_significant_negative[[dataset]] <- integrate(approxfun(delta, y = p_delta, method = "linear"), delta[1], -clinical_significance)$value
+    P_significant_positive[[dataset]] <- integrate(approxfun(delta, y = p_delta, method = "linear"), clinical_significance, tail(delta, n=1))$value
+    P_significant_double[[dataset]] <- P_significant_negative[[dataset]] + P_significant_positive[[dataset]]
     
-    print(paste0('      The probability that the difference is NOT clinically significant is ', format(round(P_insignificant[[dataset]] * 100, 2), nsmall = 2), '%'))
-    
+    print(paste0('      The probability that the difference is clinically significant in the negative direction is ', format(round(P_significant_negative[[dataset]] * 100, 2), nsmall = 2), '%'))
+    print(paste0('      The probability that the difference is NOT clinically significant in the negative direction is ', format(round((1 - P_significant_negative[[dataset]]) * 100, 2), nsmall = 2), '%'))
+    print(paste0('      The probability that the difference is clinically significant in the positive direction is ', format(round(P_significant_positive[[dataset]] * 100, 2), nsmall = 2), '%'))
+    print(paste0('      The probability that the difference is NOT clinically significant in the positive direction is ', format(round((1 - P_significant_positive[[dataset]]) * 100, 2), nsmall = 2), '%'))
+    print(paste0('      The probability that the difference is clinically significant in either direction is ', format(round(P_significant_double[[dataset]] * 100, 2), nsmall = 2), '%'))
+    print(paste0('      The probability that the difference is NOT clinically significant in either direction is ', format(round((1 - P_significant_double[[dataset]]) * 100, 2), nsmall = 2), '%'))
+
+
     png(filename=file.path("Plots", dataset, split_type, "Difference.png"))
     plot(delta,
          p_delta,

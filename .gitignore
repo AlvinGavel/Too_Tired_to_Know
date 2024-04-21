@@ -12,8 +12,7 @@
 # I consider the way R tries to save session data to be a terrible misfeature in any case,
 # and avoid using this even on my own computer.
 *.Rhistory
-/Plots/Control_group.png
-/Plots/Test_group.png
 /.idea
 .Rproj.user
 /Plots/
+/Plots.zip
