@@ -107,8 +107,8 @@ for (i in 1:length(datasets)) {
     print(paste0('In the ', group, ' group ', format(round(frac_acc * 100, 2), nsmall = 2), '% rated themselves accurately'))
   }
   
-  L_cont <- L(n_acc[[group]], n_inacc[[group]], P_vector)
-  L_test <- L(n_acc[[group]], n_inacc[[group]], P_vector)
+  L_cont <- L(n_acc[['control']], n_inacc[['control']], P_vector)
+  L_test <- L(n_acc[['test']], n_inacc[['test']], P_vector)
   max_L = max(c(max(L_cont), max(L_test)))
   
   png(filename=paste0("Plots/", dataset, "/Metacognitive_performance.png"))
