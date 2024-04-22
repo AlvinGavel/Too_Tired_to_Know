@@ -21,7 +21,7 @@ filenames <- c('arithmetic' = 'arithmetic_data.csv',
 performance_indicators <- c('arithmetic' = 'correct',
                             'episodic memory' = 'correct',
                             'working memory' = 'correct',
-                            'stroop' = 'correct', # It is possible that we want to use reaction_time here
+                            'stroop' = 'reaction_time',
                             'simple attention' = 'reaction_time')
 
 split_types <- c('pre-set groups', 'reported sleepiness')
