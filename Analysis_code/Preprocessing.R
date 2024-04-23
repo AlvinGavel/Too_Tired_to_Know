@@ -90,15 +90,8 @@ for (i in 1:length(datasets)) {
         }
         
         data[[dataset]][[split_type]][[group]][[time]] <- group_data
-        
         median_rating[[dataset]][[split_type]][[group]][[time]] <- median(data[[dataset]][[split_type]][[group]][[time]]$rating3)
-        
         median_performance[[dataset]][[split_type]][[group]][[time]] <- median(data[[dataset]][[split_type]][[group]][[time]]$performance)
-        # Lower is better for reaction time
-        if (performance_indicator == 'reaction_time') {
-          median_performance[[dataset]][[split_type]][[group]][[time]] <- - median_performance[[dataset]][[split_type]][[group]][[time]]
-        }
-        
         median_sleepiness[[dataset]][[split_type]][[group]][[time]] <- median(data[[dataset]][[split_type]][[group]][[time]]$rating1)
       }
     }
