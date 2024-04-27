@@ -6,11 +6,14 @@ logB <- function(alpha, beta) {
 }
 
 L <- function(n_above, n_below, P_vector) {
-  log_L = n_above * log(P_vector) +
+  log_L <- n_above * log(P_vector) +
     n_below * log(1 - P_vector) -
     logB(n_above + 1, n_below + 1)
   return(exp(log_L))
 }
+
+outputFile <- file.path('Text_output', "Binomial.txt")
+file.create(outputFile)
 
 # Magic numbers in statistics
 clinical_significance <- 0.1
@@ -24,10 +27,10 @@ delta <- linspace(-1., 1., delta_steps)
 colours <- c('test' = "#FF0033",
              'control' = "#0000FF")
 
-performance_bounds <- list('arithmetic' = c(0.0,1.0),
+performance_bounds <- list('arithmetic' = c(0.0, max_performance[['arithmetic']]),
                            'episodic memory' = c(0.0,1.0),
                            'working memory' = c(0.0,1.0),
-                           'stroop' = c(0.0,1.0),
+                           'stroop' = c(100,1000),
                            'simple attention' = c(100,1000))
 
 rating_bounds <- c(0,10)
@@ -38,23 +41,24 @@ P_significant_negative <- c()
 P_significant_positive <- c()
 P_significant_double <- c()
 for (i in 1:length(datasets)) {
-  print(paste0('For ', dataset, ':'))
+  printOutput(paste0('For ', dataset, ':'), outputFile)
   dataset <- datasets[i]
   
   for (k in 1:2) {
     split_type <- split_types[k]
-    print(paste0('   Splitting by ', split_type))
+    printOutput(paste0('   Splitting by ', split_type), outputFile)
     if (split_type == 'pre-set groups') {
-      colour_legend = c('Control', 'Test')
+      colour_legend <- c('Control', 'Test')
     } else if (split_type == 'reported sleepiness') {
-      colour_legend = c('Less sleepy', 'More sleepy')
+      colour_legend <- c('Less sleepy', 'More sleepy')
     }
     
     n_acc <- c('test' = 0, 'control' = 0)
     n_inacc <- c('test' = 0, 'control' = 0)
+    # Session zero was a preparation test given the day before.
     for (time in 1:3) {
       for (i in 1:2) {
-        group = groups[i]
+        group <- groups[i]
         rating_above_median <- data[[dataset]][[split_type]][[group]][[time]]$rating3 >= median_rating[[dataset]][[split_type]][[group]][[time]]
         rating_below_median <- data[[dataset]][[split_type]][[group]][[time]]$rating3 < median_rating[[dataset]][[split_type]][[group]][[time]]
         performance_above_median <- data[[dataset]][[split_type]][[group]][[time]]$performance >= median_performance[[dataset]][[split_type]][[group]][[time]]
@@ -65,9 +69,9 @@ for (i in 1:length(datasets)) {
       }
     }
     
-    ylab = c('Self-rated performance', 'Sleepiness')
-    ybounds = c(list(rating_bounds), list(sleepiness_bounds))
-    ydata = c('rating3', 'rating1')
+    ylab <- c('Self-rated performance', 'Sleepiness')
+    ybounds <- c(list(rating_bounds), list(sleepiness_bounds))
+    ydata <- c('rating3', 'rating1')
     for (y in 1:2) {
       png(filename=file.path("Plots", dataset, split_type,  paste0("Actual_performance_", ylab[y], ".png")))
       plot(c(),
@@ -83,7 +87,7 @@ for (i in 1:length(datasets)) {
         y_range <- ybounds[[y]][2] - y_min
         
         for (i in 1:2) {
-          group = groups[i]
+          group <- groups[i]
           performance <- data[[dataset]][[split_type]][[group]][[time]]$performance
           performance <- performance + rnorm(length(performance),
                                              mean=0,
@@ -111,14 +115,14 @@ for (i in 1:length(datasets)) {
     }
     
     for (i in 1:2) {
-      group = groups[i]
+      group <- groups[i]
       frac_acc <- n_acc[[group]] / (n_acc[[group]] + n_inacc[[group]])
-      print(paste0('      In the ', group, ' group ', format(round(frac_acc * 100, 2), nsmall = 2), '% rated themselves accurately'))
+      printOutput(paste0('      In the ', group, ' group ', format(round(frac_acc * 100, 2), nsmall = 2), '% rated themselves accurately'), outputFile)
     }
     
     L_cont <- L(n_acc[['control']], n_inacc[['control']], P_vector)
     L_test <- L(n_acc[['test']], n_inacc[['test']], P_vector)
-    max_L = max(c(max(L_cont), max(L_test)))
+    max_L <- max(c(max(L_cont), max(L_test)))
     
     png(filename=file.path("Plots", dataset, split_type, "Metacognitive_performance.png"))
     plot(c(),
@@ -132,14 +136,14 @@ for (i in 1:length(datasets)) {
     lines(P_vector,
           L_cont,
           type="l",
-          lty = "solid",
+          lty="solid",
           xaxs="i",
           yaxs="i",
           col=colours[['control']])
     lines(P_vector,
           L_test,
           type="l",
-          lty = "solid",
+          lty="solid",
           xaxs="i",
           yaxs="i",
           col=colours[['test']])
@@ -161,12 +165,12 @@ for (i in 1:length(datasets)) {
     P_significant_positive[[dataset]] <- integrate(approxfun(delta, y = p_delta, method = "linear"), clinical_significance, tail(delta, n=1))$value
     P_significant_double[[dataset]] <- P_significant_negative[[dataset]] + P_significant_positive[[dataset]]
     
-    print(paste0('      The probability that the difference is clinically significant in the negative direction is ', format(round(P_significant_negative[[dataset]] * 100, 2), nsmall = 2), '%'))
-    print(paste0('      The probability that the difference is NOT clinically significant in the negative direction is ', format(round((1 - P_significant_negative[[dataset]]) * 100, 2), nsmall = 2), '%'))
-    print(paste0('      The probability that the difference is clinically significant in the positive direction is ', format(round(P_significant_positive[[dataset]] * 100, 2), nsmall = 2), '%'))
-    print(paste0('      The probability that the difference is NOT clinically significant in the positive direction is ', format(round((1 - P_significant_positive[[dataset]]) * 100, 2), nsmall = 2), '%'))
-    print(paste0('      The probability that the difference is clinically significant in either direction is ', format(round(P_significant_double[[dataset]] * 100, 2), nsmall = 2), '%'))
-    print(paste0('      The probability that the difference is NOT clinically significant in either direction is ', format(round((1 - P_significant_double[[dataset]]) * 100, 2), nsmall = 2), '%'))
+    printOutput(paste0('      The probability that the difference is clinically significant in the negative direction is ', format(round(P_significant_negative[[dataset]] * 100, 2), nsmall = 2), '%'), outputFile)
+    printOutput(paste0('      The probability that the difference is NOT clinically significant in the negative direction is ', format(round((1 - P_significant_negative[[dataset]]) * 100, 2), nsmall = 2), '%'), outputFile)
+    printOutput(paste0('      The probability that the difference is clinically significant in the positive direction is ', format(round(P_significant_positive[[dataset]] * 100, 2), nsmall = 2), '%'), outputFile)
+    printOutput(paste0('      The probability that the difference is NOT clinically significant in the positive direction is ', format(round((1 - P_significant_positive[[dataset]]) * 100, 2), nsmall = 2), '%'), outputFile)
+    printOutput(paste0('      The probability that the difference is clinically significant in either direction is ', format(round(P_significant_double[[dataset]] * 100, 2), nsmall = 2), '%'), outputFile)
+    printOutput(paste0('      The probability that the difference is NOT clinically significant in either direction is ', format(round((1 - P_significant_double[[dataset]]) * 100, 2), nsmall = 2), '%'), outputFile)
 
 
     png(filename=file.path("Plots", dataset, split_type, "Difference.png"))
