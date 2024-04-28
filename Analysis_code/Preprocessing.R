@@ -55,7 +55,7 @@ for (i in 1:length(datasets)) {
   
   performance_indicator <- as.character(performance_indicators[[dataset]])
   
-  file_data <- read.csv(file = paste0('Data/', filenames[[dataset]]))
+  file_data <- read.csv(file = file.path('Data', filenames[[dataset]]))
   
   if (dataset == 'arithmetic') {
     data_processed <- file_data %>% group_by(ID, time) %>% summarize(performance = 120 * 1000 * sum(correct) / (max(time_start_battery) - min(time_start_battery)),

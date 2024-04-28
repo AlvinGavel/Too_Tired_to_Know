@@ -28,12 +28,12 @@ colours <- c('test' = "#FF0033",
              'control' = "#0000FF")
 
 performance_bounds <- list('arithmetic' = c(0.0, max_performance[['arithmetic']]),
-                           'episodic memory' = c(0.0,1.0),
-                           'working memory' = c(0.0,1.0),
-                           'stroop' = c(100,1000),
-                           'simple attention' = c(100,1000))
+                           'episodic memory' = c(0.0, 1.0),
+                           'working memory' = c(0.0, 1.0),
+                           'stroop' = c(100, 1000),
+                           'simple attention' = c(100, 1000))
 
-rating_bounds <- c(0,10)
+rating_bounds <- c(0, 10)
 sleepiness_bounds <- c(0, 9)
 scatterplot_scatter <- 0.005
 
@@ -130,7 +130,7 @@ for (i in 1:length(datasets)) {
          main=dataset,
          xlab="P",
          ylab="p_(a,a)^x",
-         xlim=c(0,1),
+         xlim=c(0, 1),
          ylim=c(0, max_L),
          cex=10)
     lines(P_vector,
@@ -178,7 +178,7 @@ for (i in 1:length(datasets)) {
          p_delta,
          type="l",
          lty = "solid",
-         xlim=c(-1,1),
+         xlim=c(-1, 1),
          ylim =c(0, max(p_delta) * 1.1),
          xaxs="i",
          yaxs="i")
