@@ -53,8 +53,6 @@ for (i in 1:length(datasets)) {
   printOutput(paste0('Preprocessing ', dataset, ' data'), outputFile)
   dir.create(file.path('Plots', dataset), showWarnings = FALSE)
   
-  performance_indicator <- as.character(performance_indicators[[dataset]])
-  
   file_data <- read.csv(file = file.path('Data', filenames[[dataset]]))
   
   if (dataset == 'arithmetic') {
