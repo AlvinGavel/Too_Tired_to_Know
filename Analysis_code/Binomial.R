@@ -69,37 +69,37 @@ for (i in 1:length(datasets)) {
       }
     }
     
-    ylab <- c('Self-rated performance', 'Sleepiness')
-    ybounds <- c(list(rating_bounds), list(sleepiness_bounds))
-    ydata <- c('rating3', 'rating1')
-    for (y in 1:2) {
-      png(filename=file.path("Plots", dataset, split_type,  paste0("Actual_performance_", ylab[y], ".png")))
+    xlab <- c('Self-rated performance', 'Sleepiness')
+    xbounds <- c(list(rating_bounds), list(sleepiness_bounds))
+    xdata <- c('rating3', 'rating1')
+    for (x in 1:2) {
+      png(filename=file.path("Plots", dataset, split_type,  paste0("Actual_performance_", xlab[x], ".png")))
       plot(c(),
            c(),
-           xlab="Actual performance",
-           ylab=ylab[y],
-           xlim=performance_bounds[[dataset]],
-           ylim=ybounds[[y]],
+           ylab="Actual performance",
+           xlab=xlab[x],
+           ylim=performance_bounds[[dataset]],
+           xlim=xbounds[[x]],
            cex=10)
       for (time in 1:3) {
-        x_range <- performance_bounds[[dataset]][2] - performance_bounds[[dataset]][1]
-        y_min <- ybounds[[y]][1]
-        y_range <- ybounds[[y]][2] - y_min
+        y_range <- performance_bounds[[dataset]][2] - performance_bounds[[dataset]][1]
+        x_min <- xbounds[[x]][1]
+        x_range <- xbounds[[x]][2] - x_min
         
         for (i in 1:2) {
           group <- groups[i]
           performance <- data[[dataset]][[split_type]][[group]][[time]]$performance
           performance <- performance + rnorm(length(performance),
                                              mean=0,
-                                             sd=x_range * scatterplot_scatter)
+                                             sd=y_range * scatterplot_scatter)
           
-          rating <- data[[dataset]][[split_type]][[group]][[time]][[ydata[y]]]
+          rating <- data[[dataset]][[split_type]][[group]][[time]][[xdata[x]]]
           rating <- rating + rnorm(length(rating),
                                    mean=0,
-                                   sd=y_range * scatterplot_scatter)
+                                   sd=x_range * scatterplot_scatter)
           
-          points(performance,
-                 rating,
+          points(rating,
+                 performance,
                  cex=0.1,
                  pch=1,
                  col=c(colours[[group]]))
