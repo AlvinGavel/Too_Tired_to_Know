@@ -41,8 +41,8 @@ P_significant_negative <- c()
 P_significant_positive <- c()
 P_significant_double <- c()
 for (i in 1:length(datasets)) {
-  printOutput(paste0('For ', dataset, ':'), outputFile)
   dataset <- datasets[i]
+  printOutput(paste0('For ', dataset, ':'), outputFile)
   
   for (k in 1:2) {
     split_type <- split_types[k]
@@ -186,6 +186,7 @@ for (i in 1:length(datasets)) {
     abline(v=-clinical_significance, col="black", lty = "dashed")
     dev.off()
   }
+  printOutput('', outputFile)
 }
 
 
