@@ -127,18 +127,14 @@ for (i in 1:length(datasets)) {
         median_sleepiness[[dataset]][[split_type]][[group]][[time]] <- median(data[[dataset]][[split_type]][[group]][[time]]$rating1)
       }
     }
-    for (i in 1:2) {
-      group <- groups[i]
-      printOutput(paste0('   For the ', group, ' group'), outputFile)
-      for (time in 1:3) {
-        printOutput(paste0('      For time ', time), outputFile)
-        printOutput(paste0('         The median self-rated performance in the control group was ', median_rating[[dataset]][[split_type]][['control']][[time]]), outputFile)
-        printOutput(paste0('         The median self-rated performance in the test group was ', median_rating[[dataset]][[split_type]][['test']][[time]]), outputFile)
-        printOutput(paste0('         The median actual performance in the control group was ', format(median_performance[[dataset]][[split_type]][['control']][[time]]), nsmall = 2), outputFile)
-        printOutput(paste0('         The median actual performance in the test group was ', format(median_performance[[dataset]][[split_type]][['test']][[time]]), nsmall = 2), outputFile)
-        printOutput(paste0('         The median reported sleepiness in the control group was ', median_sleepiness[[dataset]][[split_type]][['control']][[time]]), outputFile)
-        printOutput(paste0('         The median reported sleepiness in the test group was ', median_sleepiness[[dataset]][[split_type]][['test']][[time]]), outputFile)
-      }
+    for (time in 1:3) {
+      printOutput(paste0('      For time ', time), outputFile)
+      printOutput(paste0('         The median self-rated performance in the control group was ', median_rating[[dataset]][[split_type]][['control']][[time]]), outputFile)
+      printOutput(paste0('         The median self-rated performance in the test group was ', median_rating[[dataset]][[split_type]][['test']][[time]]), outputFile)
+      printOutput(paste0('         The median actual performance in the control group was ', format(median_performance[[dataset]][[split_type]][['control']][[time]]), nsmall = 2), outputFile)
+      printOutput(paste0('         The median actual performance in the test group was ', format(median_performance[[dataset]][[split_type]][['test']][[time]]), nsmall = 2), outputFile)
+      printOutput(paste0('         The median reported sleepiness in the control group was ', median_sleepiness[[dataset]][[split_type]][['control']][[time]]), outputFile)
+      printOutput(paste0('         The median reported sleepiness in the test group was ', median_sleepiness[[dataset]][[split_type]][['test']][[time]]), outputFile)
     }
   }
   printOutput('', outputFile)
