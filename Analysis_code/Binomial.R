@@ -103,8 +103,10 @@ for (k in 1:2) {
                  col=c(colours[[group]]))
         }
       }
-      legend(performance_bounds[[dataset]][1],
-             x_min + 0.1 * y_range,
+      y_min <- performance_bounds[[dataset]][1]
+      y_range <- performance_bounds[[dataset]][2] - y_min
+      legend(xbounds[[x]][1],
+             y_min + 0.1 * y_range,
              legend=colour_legend,
              cex=0.8,
              pch=1,
@@ -123,11 +125,10 @@ for (k in 1:2) {
   L_test <- L(n_acc[['test']], n_inacc[['test']], P_vector)
   max_L <- max(c(max(L_cont), max(L_test)))
   
-  # Probability distribution over P
+  # Probability distributions over P
   png(filename=file.path("Plots", split_type, "Aggregate", "Metacognitive_performance.png"))
   plot(c(),
        c(),
-       main=dataset,
        xlab="P^x",
        ylab="p(P^x)",
        xlim=c(0, 1),
@@ -177,6 +178,8 @@ for (k in 1:2) {
   png(filename=file.path("Plots", split_type, "Aggregate", "Difference.png"))
   plot(delta,
        p_delta,
+       xlab="D",
+       ylab="p(D)",
        type="l",
        lty = "solid",
        xlim=c(-1, 1),
