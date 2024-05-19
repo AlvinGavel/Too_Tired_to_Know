@@ -1,7 +1,7 @@
 library(brms)
 library(dplyr)
 library(pracma)
-library(plotrix)
+library(stringr)
 
 printOutput <- function(string, filePath) {
   print(string)

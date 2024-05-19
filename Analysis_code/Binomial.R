@@ -74,6 +74,7 @@ for (k in 1:2) {
       png(filename=file.path("Plots", split_type, "Individual_tests", dataset, paste0("Actual_performance_", xlab[x], ".png")))
       plot(c(),
            c(),
+           main=str_to_title(dataset),
            ylab="Actual performance",
            xlab=xlab[x],
            ylim=performance_bounds[[dataset]],
