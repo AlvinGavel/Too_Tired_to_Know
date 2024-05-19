@@ -85,10 +85,10 @@ n\\
 Now, say that $P_h$ is unknown and that we want to estimate it based on these samples. By Bayes' theorem, the probability density $p \left( P_h | n, n_h \right)$ for any particular value $P_h$ is given by:
 \begin{align}
 p \left( P_h | n, n_h \right) &=
-\frac{P \left( n_h | n, P_h \right) p \left( P_h \right) }{ P \left( n_h | n \right) }
+\frac{p \left( n_h | n, P_h \right) p \left( P_h \right) }{ p \left( n_h | n \right) }
 \label{eq_bayes_definition}
 \end{align}
-where $p \left( P_h \right)$ is the prior probability density over $P_h$ and $P \left( n_h | n \right)$ is a normalisation factor. To make our life simpler we choose a flat prior. With a bit of work it can be shown that if insert this prior and \eqref{eq_likelihood} into \eqref{eq_bayes_definition} and require the distribution to be normalised then we end up with:
+where $p \left( P_h \right)$ is the prior probability density over $P_h$ and $p \left( n_h | n \right)$ is a normalisation factor. To make our life simpler we choose a flat prior. With a bit of work it can be shown that if insert this prior and \eqref{eq_likelihood} into \eqref{eq_bayes_definition} and require the distribution to be normalised then we end up with:
 \begin{align}
 p \left( P_h | n, n_h \right) &=
 \frac{ P_h^{n_h} \left( 1 - P_h\right )^{n - n_h} }

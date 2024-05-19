@@ -1,15 +1,16 @@
 library(brms)
 library(dplyr)
 library(pracma)
-
-dir.create('Text_output', showWarnings = FALSE)
-outputFile <- file.path('Text_output', "Preprocessing.txt")
-file.create(outputFile)
+library(plotrix)
 
 printOutput <- function(string, filePath) {
   print(string)
   write(string, filePath, append=TRUE)
 }
+
+dir.create('Text_output', showWarnings = FALSE)
+outputFile <- file.path('Text_output', "Preprocessing.txt")
+file.create(outputFile)
 
 kss <- read.csv(file = 'Data/kss_data.csv')
 
@@ -48,10 +49,16 @@ shortest_session <- list()
 longest_session <- list()
 
 dir.create('Plots', showWarnings = FALSE)
+for (k in 1:2) {
+  split_type <- split_types[k]
+  dir.create(file.path('Plots', split_type), showWarnings = FALSE)
+  dir.create(file.path('Plots', split_type, 'Aggregate'), showWarnings = FALSE)
+  dir.create(file.path('Plots', split_type, 'Individual_tests'), showWarnings = FALSE)
+}
+
 for (i in 1:length(datasets)) {
   dataset <- datasets[i]
   printOutput(paste0('Preprocessing ', dataset, ' data'), outputFile)
-  dir.create(file.path('Plots', dataset), showWarnings = FALSE)
   
   file_data <- read.csv(file = file.path('Data', filenames[[dataset]]))
   
@@ -95,9 +102,10 @@ for (i in 1:length(datasets)) {
   printOutput(paste0('Reported median sleepiness across the board is ', median_sleepiness_across_groups), outputFile)
   
   for (k in 1:2) {
+    dir.create(file.path('Plots', split_type, 'Individual_tests', dataset), showWarnings = FALSE)
+    
     split_type <- split_types[k]
     printOutput(paste0('Splitting by ', split_type), outputFile)
-    dir.create(file.path('Plots', dataset, split_type), showWarnings = FALSE)
     
     data[[dataset]][[split_type]] <- list()
     median_performance[[dataset]][[split_type]] <- list()
