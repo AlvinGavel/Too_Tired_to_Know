@@ -2,13 +2,24 @@ library(brms)
 library(dplyr)
 library(pracma)
 library(stringr)
+library(scales)
 
 printOutput <- function(string, filePath) {
   print(string)
   write(string, filePath, append=TRUE)
 }
 
-dir.create('Text_output', showWarnings = FALSE)
+dir.create('Plots',
+           showWarnings = FALSE)
+dir.create(file.path('Plots',
+                     'Comparisons'),
+           showWarnings = FALSE)
+dir.create('Text_output',
+           showWarnings = FALSE)
+dir.create(file.path('Text_output',
+                     'Comparisons'),
+           showWarnings = FALSE)
+
 outputFile <- file.path('Text_output', "Preprocessing.txt")
 file.create(outputFile)
 
@@ -40,6 +51,7 @@ group_sd <- c('test' = 'Sleep Deprivation',
               'control' = 'Control')
 
 data <- list()
+data_sessions_combined <- list()
 median_performance <-  list()
 median_rating <-  list()
 median_sleepiness <-  list()
@@ -48,13 +60,7 @@ max_performance <- list()
 shortest_session <- list()
 longest_session <- list()
 
-dir.create('Plots', showWarnings = FALSE)
-for (k in 1:2) {
-  split_type <- split_types[k]
-  dir.create(file.path('Plots', split_type), showWarnings = FALSE)
-  dir.create(file.path('Plots', split_type, 'Aggregate'), showWarnings = FALSE)
-  dir.create(file.path('Plots', split_type, 'Individual_tests'), showWarnings = FALSE)
-}
+
 
 for (i in 1:length(datasets)) {
   dataset <- datasets[i]
@@ -94,6 +100,7 @@ for (i in 1:length(datasets)) {
                        all.y=FALSE)
   
   data[[dataset]] <- list()
+  data_sessions_combined[[dataset]] <- list()
   median_performance[[dataset]] <- list()
   median_rating[[dataset]] <- list()
   median_sleepiness[[dataset]] <- list()
@@ -102,12 +109,11 @@ for (i in 1:length(datasets)) {
   printOutput(paste0('Reported median sleepiness across the board is ', median_sleepiness_across_groups), outputFile)
   
   for (k in 1:2) {
-    dir.create(file.path('Plots', split_type, 'Individual_tests', dataset), showWarnings = FALSE)
-    
     split_type <- split_types[k]
     printOutput(paste0('Splitting by ', split_type), outputFile)
     
     data[[dataset]][[split_type]] <- list()
+    data_sessions_combined[[dataset]][[split_type]] <- list()
     median_performance[[dataset]][[split_type]] <- list()
     median_rating[[dataset]][[split_type]] <- list()
     median_sleepiness[[dataset]][[split_type]] <- list()
@@ -115,6 +121,7 @@ for (i in 1:length(datasets)) {
     for (i in 1:2) {
       group <- groups[i]
       data[[dataset]][[split_type]][[group]] <- list()
+      data_sessions_combined[[dataset]][[split_type]][[group]] <- list()
       median_performance[[dataset]][[split_type]][[group]] <- list()
       median_rating[[dataset]][[split_type]][[group]] <- list()
       median_sleepiness[[dataset]][[split_type]][[group]] <- list()
@@ -130,6 +137,12 @@ for (i in 1:length(datasets)) {
         }
         
         data[[dataset]][[split_type]][[group]][[time]] <- group_data
+        if (time == 1) {
+          data_sessions_combined[[dataset]][[split_type]][[group]] <- group_data
+        } else {
+          data_sessions_combined[[dataset]][[split_type]][[group]] <- rbind(data_sessions_combined[[dataset]][[split_type]][[group]],
+                                                                            group_data)
+        }
         median_rating[[dataset]][[split_type]][[group]][[time]] <- median(data[[dataset]][[split_type]][[group]][[time]]$rating3)
         median_performance[[dataset]][[split_type]][[group]][[time]] <- median(data[[dataset]][[split_type]][[group]][[time]]$performance)
         median_sleepiness[[dataset]][[split_type]][[group]][[time]] <- median(data[[dataset]][[split_type]][[group]][[time]]$rating1)
