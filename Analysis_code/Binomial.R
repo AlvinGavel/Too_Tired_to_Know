@@ -34,15 +34,29 @@ delta <- linspace(-1., 1., delta_steps)
 # Parameters in plotting
 colours <- c('test' = "#FF0033", 'control' = "#0000FF")
 
-plot_bounds <- list('performance' = list(
-  'arithmetic' = c(0.0, max_performance[['arithmetic']]),
-  'episodic memory' = c(0.0, 1.0),
-  'working memory' = c(0.0, 1.0),
-  'stroop' = c(100, max_performance[['stroop']]),
-  'simple attention' = c(100, max_performance[['simple attention']])
-),
-'rating' = c(0, 10),
-'sleepiness' = c(0, 9)
+plot_bounds <- list(
+  'narrow' = list(
+    'performance' = list(
+      'arithmetic' = c(0.0, max_performance[['arithmetic']]),
+      'episodic memory' = c(0.0, 1.0),
+      'working memory' = c(0.0, 1.0),
+      'stroop' = c(100, 1000),
+      'simple attention' = c(100, 1000)
+    ),
+    'rating' = c(0, 10),
+    'sleepiness' = c(0, 9)
+  ),
+  'wide' = list(
+    'performance' = list(
+      'arithmetic' = c(0.0, max_performance[['arithmetic']]),
+      'episodic memory' = c(0.0, 1.0),
+      'working memory' = c(0.0, 1.0),
+      'stroop' = c(100, max_performance[['stroop']]),
+      'simple attention' = c(100, max_performance[['simple attention']])
+    ),
+    'rating' = c(0, 10),
+    'sleepiness' = c(0, 9)
+  )
 )
 
 scatterplot_scatter <- 0.005
@@ -58,8 +72,7 @@ for (n in 1:length(practical_significances)) {
     'Text_output',
     practical_significance_string(practical_significance)
   ),
-  showWarnings = FALSE
-  )
+  showWarnings = FALSE)
   
   for (k in 1:2) {
     split_type <- split_types[k]
@@ -71,29 +84,32 @@ for (n in 1:length(practical_significances)) {
       split_type
     ),
     showWarnings = FALSE)
-    dir.create(file.path(
-      'Plots',
-      practical_significance_string(practical_significance),
-      split_type,
-      'Aggregate'
-    ),
-    showWarnings = FALSE
+    dir.create(
+      file.path(
+        'Plots',
+        practical_significance_string(practical_significance),
+        split_type,
+        'Aggregate'
+      ),
+      showWarnings = FALSE
     )
-    dir.create(file.path(
-      'Plots',
-      practical_significance_string(practical_significance),
-      split_type,
-      'Individual_tests'
-    ),
-    showWarnings = FALSE
+    dir.create(
+      file.path(
+        'Plots',
+        practical_significance_string(practical_significance),
+        split_type,
+        'Individual_tests'
+      ),
+      showWarnings = FALSE
     )
     
-    dir.create(file.path(
-      'Text_output',
-      practical_significance_string(practical_significance),
-      split_type
-    ),
-    showWarnings = FALSE
+    dir.create(
+      file.path(
+        'Text_output',
+        practical_significance_string(practical_significance),
+        split_type
+      ),
+      showWarnings = FALSE
     )
     
     outputFile <- file.path(
@@ -147,52 +163,63 @@ for (n in 1:length(practical_significances)) {
       
       # Histograms across real performance, self-rated performance and sleepiness
       hist_targets = c('performance', 'rating', 'sleepiness')
-      hist_names = list('performance' = 'Actual_performance',
-                        'rating' = 'Self-rated performance',
-                        'sleepiness' = 'Sleepiness')
-      hist_test = list('performance' = data_sessions_combined[[dataset]][[split_type]][['test']]$performance,
-                       'rating' = data_sessions_combined[[dataset]][[split_type]][['test']]$rating3,
-                       'sleepiness' = data_sessions_combined[[dataset]][[split_type]][['test']]$rating1)
-      hist_control = list('performance' = data_sessions_combined[[dataset]][[split_type]][['control']]$performance,
-                          'rating' = data_sessions_combined[[dataset]][[split_type]][['control']]$rating3,
-                          'sleepiness' = data_sessions_combined[[dataset]][[split_type]][['control']]$rating1)
-      hist_bounds = list('performance' = plot_bounds[['performance']][[dataset]],
-                         'rating' = plot_bounds[['rating']],
-                      'sleepiness' = plot_bounds[['sleepiness']]
+      hist_names = list(
+        'performance' = 'Actual_performance',
+        'rating' = 'Self-rated performance',
+        'sleepiness' = 'Sleepiness'
+      )
+      hist_test = list(
+        'performance' = data_sessions_combined[[dataset]][[split_type]][['test']]$performance,
+        'rating' = data_sessions_combined[[dataset]][[split_type]][['test']]$rating3,
+        'sleepiness' = data_sessions_combined[[dataset]][[split_type]][['test']]$rating1
+      )
+      hist_control = list(
+        'performance' = data_sessions_combined[[dataset]][[split_type]][['control']]$performance,
+        'rating' = data_sessions_combined[[dataset]][[split_type]][['control']]$rating3,
+        'sleepiness' = data_sessions_combined[[dataset]][[split_type]][['control']]$rating1
+      )
+      hist_bounds = list(
+        'performance' = plot_bounds[['wide']][['performance']][[dataset]],
+        'rating' = plot_bounds[['wide']][['rating']],
+        'sleepiness' = plot_bounds[['wide']][['sleepiness']]
         
       )
       for (t in 1:3) {
         target = hist_targets[t]
-      png(
-        filename = file.path(
-          "Plots",
-          practical_significance_string(practical_significance),
-          split_type,
-          "Individual_tests",
-          dataset,
-          paste0(hist_names[[target]], ".png")
+        png(
+          filename = file.path(
+            "Plots",
+            practical_significance_string(practical_significance),
+            split_type,
+            "Individual_tests",
+            dataset,
+            paste0(hist_names[[target]], ".png")
+          )
         )
-      )
-      hist_splits = seq(hist_bounds[[target]][[1]], hist_bounds[[target]][[2]], length.out = 11)
-      test_hist <- hist(hist_test[[target]], breaks = hist_splits)
-      cont_hist <- hist(hist_control[[target]], breaks = hist_splits)
-      plot(test_hist,
-           col=alpha(colours[['test']], 0.4),
-           xlim=hist_bounds[[target]],
-           main = "",
-           xlab = hist_names[[target]])
-      plot(cont_hist,
-           col=alpha(colours[['control']], 0.4),
-           xlim=hist_bounds[[target]],
-           main = "",
-           xlab = hist_names[[target]],
-           add=T)
-      dev.off()
+        hist_splits = seq(hist_bounds[[target]][[1]], hist_bounds[[target]][[2]], length.out = 11)
+        test_hist <- hist(hist_test[[target]], breaks = hist_splits)
+        cont_hist <- hist(hist_control[[target]], breaks = hist_splits)
+        plot(
+          test_hist,
+          col = alpha(colours[['test']], 0.4),
+          xlim = hist_bounds[[target]],
+          main = "",
+          xlab = hist_names[[target]]
+        )
+        plot(
+          cont_hist,
+          col = alpha(colours[['control']], 0.4),
+          xlim = hist_bounds[[target]],
+          main = "",
+          xlab = hist_names[[target]],
+          add = T
+        )
+        dev.off()
       }
       
       # Scatterplots across real performance and either self-rated performance or sleepiness
       xlab <- c('Self-rated performance', 'Sleepiness')
-      xbounds <- c(list(plot_bounds[['rating']]), list(plot_bounds[['sleepiness']]))
+      xbounds <- c(list(plot_bounds[['narrow']][['rating']]), list(plot_bounds[['narrow']][['sleepiness']]))
       xdata <- c('rating3', 'rating1')
       for (x in 1:2) {
         png(
@@ -211,12 +238,12 @@ for (n in 1:length(practical_significances)) {
           main = str_to_title(dataset),
           ylab = "Actual performance",
           xlab = xlab[x],
-          ylim = plot_bounds[['performance']][[dataset]],
+          ylim = plot_bounds[['narrow']][['performance']][[dataset]],
           xlim = xbounds[[x]],
           cex = 10
         )
         for (time in 1:3) {
-          y_range <- plot_bounds[['performance']][[dataset]][2] - plot_bounds[['performance']][[dataset]][1]
+          y_range <- plot_bounds[['narrow']][['performance']][[dataset]][2] - plot_bounds[['narrow']][['performance']][[dataset]][1]
           x_min <- xbounds[[x]][1]
           x_range <- xbounds[[x]][2] - x_min
           
@@ -243,8 +270,8 @@ for (n in 1:length(practical_significances)) {
             )
           }
         }
-        y_min <- plot_bounds[['performance']][[dataset]][1]
-        y_range <- plot_bounds[['performance']][[dataset]][2] - y_min
+        y_min <- plot_bounds[['narrow']][['performance']][[dataset]][1]
+        y_range <- plot_bounds[['narrow']][['performance']][[dataset]][2] - y_min
         legend(
           xbounds[[x]][1],
           y_min + 0.1 * y_range,
@@ -328,8 +355,7 @@ for (n in 1:length(practical_significances)) {
     probability_mass <- integrate(approxfun(delta, y = p_delta, method = "linear"), -1, 1)$value
     p_delta <- p_delta / probability_mass
     P_significant_negative <- integrate(approxfun(delta, y = p_delta, method = "linear"),
-                                        delta[1],
-                                        -practical_significance)$value
+                                        delta[1],-practical_significance)$value
     P_significant_positive <- integrate(
       approxfun(delta, y = p_delta, method = "linear"),
       practical_significance,
