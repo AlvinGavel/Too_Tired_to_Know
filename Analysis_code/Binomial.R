@@ -170,10 +170,20 @@ for (n in 1:length(practical_significances)) {
         for (time in 1:3) {
           for (i in 1:length(groups)) {
             group <- groups[i]
-            rating_above_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$rating3 >= median_rating[[dataset]][[split_type]][[median_type]][[time]][[group]]
-            rating_below_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$rating3 < median_rating[[dataset]][[split_type]][[median_type]][[time]][[group]]
-            performance_above_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance >= median_performance[[dataset]][[split_type]][[median_type]][[time]][[group]]
-            performance_below_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance < median_performance[[dataset]][[split_type]][[median_type]][[time]][[group]]
+            if (median_type == 'within groups') {
+              comparison <- group
+            } else if (median_type == 'across groups') {
+              comparison <- 'across'
+            } else {
+              print('Something has gone wrong')
+            }
+            current_median_rating <- median_rating[[dataset]][[split_type]][[median_type]][[time]][[comparison]]
+            current_median_performance <- median_performance[[dataset]][[split_type]][[median_type]][[time]][[comparison]]
+            
+            rating_above_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$rating3 >= current_median_rating
+            rating_below_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$rating3 < current_median_rating
+            performance_above_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance >= current_median_performance
+            performance_below_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance < current_median_performance
             # How prone were people to rate themselves accurately w.r.t. the median
             
             n_acc[[group]] <- n_acc[[group]] + sum(rating_above_median &
