@@ -46,6 +46,8 @@ kss_abbrev <- c('arithmetic' = 'M',
 
 split_types <- c('pre-set groups', 'reported sleepiness')
 
+median_types <- c('within groups', 'across groups')
+
 groups <- c('test', 'control')
 group_sd <- c('test' = 'Sleep Deprivation',
               'control' = 'Control')
@@ -59,8 +61,6 @@ min_performance <- list()
 max_performance <- list()
 shortest_session <- list()
 longest_session <- list()
-
-
 
 for (i in 1:length(datasets)) {
   dataset <- datasets[i]
@@ -108,8 +108,8 @@ for (i in 1:length(datasets)) {
   median_sleepiness_across_groups <- median(data_merged$rating1)
   printOutput(paste0('Reported median sleepiness across the board is ', median_sleepiness_across_groups), outputFile)
   
-  for (k in 1:2) {
-    split_type <- split_types[k]
+  for (j in 1:length(split_types)) {
+    split_type <- split_types[j]
     printOutput(paste0('Splitting by ', split_type), outputFile)
     
     data[[dataset]][[split_type]] <- list()
@@ -118,47 +118,64 @@ for (i in 1:length(datasets)) {
     median_rating[[dataset]][[split_type]] <- list()
     median_sleepiness[[dataset]][[split_type]] <- list()
     
-    for (i in 1:2) {
-      group <- groups[i]
-      data[[dataset]][[split_type]][[group]] <- list()
-      data_sessions_combined[[dataset]][[split_type]][[group]] <- list()
-      median_performance[[dataset]][[split_type]][[group]] <- list()
-      median_rating[[dataset]][[split_type]][[group]] <- list()
-      median_sleepiness[[dataset]][[split_type]][[group]] <- list()
+    for (k in 1:length(median_types)) {
+      median_type <- median_types[k]
+      data[[dataset]][[split_type]][[median_type]] <- list()
+      data_sessions_combined[[dataset]][[split_type]][[median_type]] <- list()
+      median_performance[[dataset]][[split_type]][[median_type]] <- list()
+      median_rating[[dataset]][[split_type]][[median_type]] <- list()
+      median_sleepiness[[dataset]][[split_type]][[median_type]] <- list()
+      
+      for (l in 1:length(groups)) {
+        group <- groups[l]
+        data_sessions_combined[[dataset]][[split_type]][[median_type]][[group]] <- list()
+      }
+      
       for (time in 1:3) {
-        if (split_type == 'pre-set groups') {
-          group_data <- data_merged[data_merged$sd == group_sd[group] & data_merged$time == time,]
-        } else if (split_type == 'reported sleepiness') {
-          if (group == 'test') {
-            group_data <- data_merged[data_merged$rating1 >= median_sleepiness_across_groups & data_merged$time == time,]
-          } else if (group == 'control') {
-            group_data <- data_merged[data_merged$rating1 < median_sleepiness_across_groups & data_merged$time == time,]
+        data[[dataset]][[split_type]][[median_type]][[time]] <- list()
+        median_performance[[dataset]][[split_type]][[median_type]][[time]] <- list()
+        median_rating[[dataset]][[split_type]][[median_type]][[time]] <- list()
+        median_sleepiness[[dataset]][[split_type]][[median_type]][[time]] <- list()
+        for (l in 1:length(groups)) {
+          group <- groups[l]
+          data[[dataset]][[split_type]][[median_type]][[time]][[group]] <- list()
+          median_performance[[dataset]][[split_type]][[median_type]][[time]][[group]] <- list()
+          median_rating[[dataset]][[split_type]][[median_type]][[time]][[group]] <- list()
+          median_sleepiness[[dataset]][[split_type]][[median_type]][[time]][[group]] <- list()
+          
+          if (split_type == 'pre-set groups') {
+            group_data <- data_merged[data_merged$sd == group_sd[group] & data_merged$time == time,]
+          } else if (split_type == 'reported sleepiness') {
+            if (group == 'test') {
+              group_data <- data_merged[data_merged$rating1 >= median_sleepiness_across_groups & data_merged$time == time,]
+            } else if (group == 'control') {
+              group_data <- data_merged[data_merged$rating1 < median_sleepiness_across_groups & data_merged$time == time,]
+            }
           }
+          
+          data[[dataset]][[split_type]][[median_type]][[time]][[group]] <- group_data
+          if (time == 1) {
+            data_sessions_combined[[dataset]][[split_type]][[median_type]][[group]] <- group_data
+          } else {
+            data_sessions_combined[[dataset]][[split_type]][[median_type]][[group]] <- rbind(data_sessions_combined[[dataset]][[split_type]][[median_type]][[group]],
+                                                                                             group_data)
+          }
+          median_rating[[dataset]][[split_type]][[median_type]][[time]][[group]] <- median(data[[dataset]][[split_type]][[median_type]][[time]][[group]]$rating3)
+          median_performance[[dataset]][[split_type]][[median_type]][[time]][[group]] <- median(data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance)
+          median_sleepiness[[dataset]][[split_type]][[median_type]][[time]][[group]] <- median(data[[dataset]][[split_type]][[median_type]][[time]][[group]]$rating1)
         }
         
-        data[[dataset]][[split_type]][[group]][[time]] <- group_data
-        if (time == 1) {
-          data_sessions_combined[[dataset]][[split_type]][[group]] <- group_data
-        } else {
-          data_sessions_combined[[dataset]][[split_type]][[group]] <- rbind(data_sessions_combined[[dataset]][[split_type]][[group]],
-                                                                            group_data)
-        }
-        median_rating[[dataset]][[split_type]][[group]][[time]] <- median(data[[dataset]][[split_type]][[group]][[time]]$rating3)
-        median_performance[[dataset]][[split_type]][[group]][[time]] <- median(data[[dataset]][[split_type]][[group]][[time]]$performance)
-        median_sleepiness[[dataset]][[split_type]][[group]][[time]] <- median(data[[dataset]][[split_type]][[group]][[time]]$rating1)
+        printOutput(paste0('      For time ', time), outputFile)
+        printOutput(paste0('         The median self-rated performance in the control group was ', median_rating[[dataset]][[split_type]][[median_type]][[time]][['control']]), outputFile)
+        printOutput(paste0('         The median self-rated performance in the test group was ', median_rating[[dataset]][[split_type]][[median_type]][[time]][['test']]), outputFile)
+        printOutput(paste0('         The median actual performance in the control group was ', format(median_performance[[dataset]][[split_type]][[median_type]][[time]][['control']]), nsmall = 2), outputFile)
+        printOutput(paste0('         The median actual performance in the test group was ', format(median_performance[[dataset]][[split_type]][[median_type]][[time]][['test']]), nsmall = 2), outputFile)
+        printOutput(paste0('         The median reported sleepiness in the control group was ', median_sleepiness[[dataset]][[split_type]][[median_type]][[time]][['control']]), outputFile)
+        printOutput(paste0('         The median reported sleepiness in the test group was ', median_sleepiness[[dataset]][[split_type]][[median_type]][[time]][['test']]), outputFile)
       }
     }
-    for (time in 1:3) {
-      printOutput(paste0('      For time ', time), outputFile)
-      printOutput(paste0('         The median self-rated performance in the control group was ', median_rating[[dataset]][[split_type]][['control']][[time]]), outputFile)
-      printOutput(paste0('         The median self-rated performance in the test group was ', median_rating[[dataset]][[split_type]][['test']][[time]]), outputFile)
-      printOutput(paste0('         The median actual performance in the control group was ', format(median_performance[[dataset]][[split_type]][['control']][[time]]), nsmall = 2), outputFile)
-      printOutput(paste0('         The median actual performance in the test group was ', format(median_performance[[dataset]][[split_type]][['test']][[time]]), nsmall = 2), outputFile)
-      printOutput(paste0('         The median reported sleepiness in the control group was ', median_sleepiness[[dataset]][[split_type]][['control']][[time]]), outputFile)
-      printOutput(paste0('         The median reported sleepiness in the test group was ', median_sleepiness[[dataset]][[split_type]][['test']][[time]]), outputFile)
-    }
   }
-  printOutput('', outputFile)
 }
+printOutput('', outputFile)
 
 
