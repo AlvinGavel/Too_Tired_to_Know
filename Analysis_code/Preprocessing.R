@@ -3,6 +3,7 @@ library(dplyr)
 library(pracma)
 library(stringr)
 library(scales)
+library(ggplot2)
 
 printOutput <- function(string, filePath) {
   print(string)
@@ -12,12 +13,12 @@ printOutput <- function(string, filePath) {
 dir.create('Plots',
            showWarnings = FALSE)
 dir.create(file.path('Plots',
-                     'Comparisons'),
+                     'Varying_practical_significance'),
            showWarnings = FALSE)
 dir.create('Text_output',
            showWarnings = FALSE)
 dir.create(file.path('Text_output',
-                     'Comparisons'),
+                     'Varying_practical_significance'),
            showWarnings = FALSE)
 
 outputFile <- file.path('Text_output', "Preprocessing.txt")

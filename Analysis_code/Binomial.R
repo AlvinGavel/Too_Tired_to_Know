@@ -16,7 +16,7 @@ practical_significance_string <- function(practical_significance) {
   if (practical_significance == main_practical_significance) {
     path_string <- ""
   } else {
-    path_string <- paste0('Comparisons/Practical_significance_',
+    path_string <- paste0('Varying_practical_significance/Practical_significance_',
                           format(round(practical_significance * 100, 2), nsmall = 0))
   }
   return(path_string)
@@ -220,36 +220,26 @@ for (n in 1:length(practical_significances)) {
         )
         for (t in 1:3) {
           target = hist_targets[t]
-          png(
-            filename = file.path(
-              "Plots",
-              practical_significance_string(practical_significance),
-              split_type,
-              median_type,
-              "Individual_tests",
-              dataset,
-              paste0(hist_names[[target]], ".png")
-            )
+          
+          hist_df <- rbind(data.frame(fill=colours[['test']],
+                                      obs=hist_test[[target]]),
+                           data.frame(fill=colours[['control']],
+                                      obs=hist_control[[target]]))
+          ggplot(hist_df, aes(x=obs, fill=fill)) +
+            geom_histogram(bins=10, colour="black", position="dodge") +
+            scale_fill_identity() +
+            labs(x = hist_names[[target]])
+          
+          ggsave(file.path(
+            "Plots",
+            practical_significance_string(practical_significance),
+            split_type,
+            median_type,
+            "Individual_tests",
+            dataset,
+            paste0(hist_names[[target]], ".png")
           )
-          hist_splits = seq(hist_bounds[[target]][[1]], hist_bounds[[target]][[2]], length.out = 11)
-          test_hist <- hist(hist_test[[target]], breaks = hist_splits)
-          cont_hist <- hist(hist_control[[target]], breaks = hist_splits)
-          plot(
-            test_hist,
-            col = alpha(colours[['test']], 0.4),
-            xlim = hist_bounds[[target]],
-            main = "",
-            xlab = hist_names[[target]]
           )
-          plot(
-            cont_hist,
-            col = alpha(colours[['control']], 0.4),
-            xlim = hist_bounds[[target]],
-            main = "",
-            xlab = hist_names[[target]],
-            add = T
-          )
-          dev.off()
         }
         
         # Scatterplots across real performance and either self-rated performance or sleepiness
