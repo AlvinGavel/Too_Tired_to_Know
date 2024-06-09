@@ -31,8 +31,6 @@ P_vector <- linspace(0., 1., n_steps)
 delta_steps <- 2 * n_steps - 1
 delta <- linspace(-1., 1., delta_steps)
 
-# Parameters in plotting
-colours <- c('test' = "#FF0033", 'control' = "#0000FF")
 
 plot_bounds <- list(
   'narrow' = list(
@@ -73,6 +71,18 @@ for (n in 1:length(practical_significances)) {
     practical_significance_string(practical_significance)
   ),
   showWarnings = FALSE)
+  
+
+  ggplot(sleepiness_tasks_combined, aes(x=sleepiness, fill=fill)) +
+    geom_histogram(bins=10, colour="black", position="dodge") +
+    scale_fill_identity() +
+    labs(x = 'Sleepiness')
+  
+  ggsave(file.path(
+    "Plots",
+    "Sleepiness.png")
+  )
+  
   
   for (j in 1:length(split_types)) {
     split_type <- split_types[j]

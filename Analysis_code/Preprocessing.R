@@ -10,6 +10,8 @@ printOutput <- function(string, filePath) {
   write(string, filePath, append=TRUE)
 }
 
+colours <- c('test' = "#FF0033", 'control' = "#0000FF")
+
 dir.create('Plots',
            showWarnings = FALSE)
 dir.create(file.path('Plots',
@@ -106,7 +108,13 @@ for (i in 1:length(datasets)) {
   median_rating[[dataset]] <- list()
   median_sleepiness[[dataset]] <- list()
   
-  median_sleepiness_across_groups <- median(data_merged$rating1)
+  sleepiness_tasks_combined <- data.frame(sleepiness=data_merged$rating1,
+                                          group=data_merged$sd)
+  sleepiness_tasks_combined <- transform(sleepiness_tasks_combined, fill=ifelse(group=='Control',
+                                                                                colours[['control']],
+                                                                                colours[['test']]))
+  
+  median_sleepiness_across_groups <- median(sleepiness_tasks_combined$sleepiness)
   printOutput(paste0('Reported median sleepiness across the board is ', median_sleepiness_across_groups), outputFile)
   
   for (j in 1:length(split_types)) {
