@@ -86,7 +86,7 @@ for (n in 1:length(practical_significances)) {
   
   for (j in 1:length(split_types)) {
     split_type <- split_types[j]
-    printOutput(paste0('Splitting by ', split_type), outputFile)
+#    printOutput(paste0('Splitting by ', split_type), outputFile)
     
     dir.create(file.path(
       'Plots',
@@ -109,7 +109,13 @@ for (n in 1:length(practical_significances)) {
     
     for (k in 1:length(median_types)) {
       median_type <- median_types[k]
-      printOutput(paste0('Calculating median ', median_type), outputFile)
+     # printOutput(paste0('Calculating median ', median_type), outputFile)
+      outputFile <- file.path('Text_output',
+                              practical_significance_string(practical_significance),
+                              split_type,
+                              paste0(median_type, '.txt'))
+      
+      file.create(file.path(outputFile))
       
       dir.create(file.path(
         'Plots',
@@ -137,26 +143,6 @@ for (n in 1:length(practical_significances)) {
           'Individual_tests'
         ),
         showWarnings = FALSE
-      )
-      
-      dir.create(
-        file.path(
-          'Text_output',
-          practical_significance_string(practical_significance),
-          split_type,
-          median_type
-        ),
-        showWarnings = FALSE
-      )
-      
-      file.create(
-        file.path(
-          'Text_output',
-          practical_significance_string(practical_significance),
-          split_type,
-          median_type,
-          'Binomial.txt'
-        )
       )
       
       n_acc <- c('test' = 0, 'control' = 0)
