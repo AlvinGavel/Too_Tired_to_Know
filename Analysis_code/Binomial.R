@@ -1,26 +1,6 @@
 source('Analysis_code/Preprocessing.R')
 
-# Function definitions
-logB <- function(alpha, beta) {
-  return(lgamma(alpha) + lgamma(beta) - lgamma(alpha + beta))
-}
 
-L <- function(n_above, n_below, P_vector) {
-  log_L <- n_above * log(P_vector) +
-    n_below * log(1 - P_vector) -
-    logB(n_above + 1, n_below + 1)
-  return(exp(log_L))
-}
-
-practical_significance_string <- function(practical_significance) {
-  if (practical_significance == main_practical_significance) {
-    path_string <- ""
-  } else {
-    path_string <- paste0('Varying_practical_significance/Practical_significance_',
-                          format(round(practical_significance * 100, 2), nsmall = 0))
-  }
-  return(path_string)
-}
 
 # Magic numbers in statistics
 main_practical_significance <- 0.1
@@ -57,6 +37,183 @@ plot_bounds <- list(
   )
 )
 
+# Function definitions
+logB <- function(alpha, beta) {
+  return(lgamma(alpha) + lgamma(beta) - lgamma(alpha + beta))
+}
+
+L <- function(n_above, n_below, P_vector) {
+  log_L <- n_above * log(P_vector) +
+    n_below * log(1 - P_vector) -
+    logB(n_above + 1, n_below + 1)
+  return(exp(log_L))
+}
+
+practical_significance_string <- function(practical_significance) {
+  if (practical_significance == main_practical_significance) {
+    path_string <- ""
+  } else {
+    path_string <- paste0('Varying_practical_significance/Practical_significance_',
+                          format(round(practical_significance * 100, 2), nsmall = 0))
+  }
+  return(path_string)
+}
+
+fullAnalysis <- function(n_acc, n_inacc, outputFile, plotFolder) {
+  for (i in 1:2) {
+    group <- groups[i]
+    frac_acc <- n_acc[[group]] / (n_acc[[group]] + n_inacc[[group]])
+    printOutput(paste0(
+      'In the ',
+      group,
+      ' group ',
+      format(round(frac_acc * 100, 2), nsmall = 2),
+      '% ratings were accurate'
+    ),
+    outputFile)
+  }
+  
+  L_cont <- L(n_acc[['control']], n_inacc[['control']], P_vector)
+  L_test <- L(n_acc[['test']], n_inacc[['test']], P_vector)
+  max_L <- max(c(max(L_cont), max(L_test)))
+  
+  # Probability distributions over P
+  png(filename = file.path(plotFolder, "Metacognitive_performance.png"))
+  plot(
+    c(),
+    c(),
+    xlab = "P^x",
+    ylab = "p(P^x)",
+    xlim = c(0, 1),
+    ylim = c(0, max_L),
+    cex = 10
+  )
+  lines(
+    P_vector,
+    L_cont,
+    type = "l",
+    lty = "solid",
+    xaxs = "i",
+    yaxs = "i",
+    col = colours[['control']]
+  )
+  lines(
+    P_vector,
+    L_test,
+    type = "l",
+    lty = "solid",
+    xaxs = "i",
+    yaxs = "i",
+    col = colours[['test']]
+  )
+  legend(
+    0,
+    max_L,
+    legend = colour_legend,
+    cex = 0.8,
+    pch = 1,
+    col = c(colours[['control']], colours[['test']])
+  )
+  dev.off()
+  
+  # Test - control
+  p_delta <- convolve(L_test, L_cont, type = 'open')
+  
+  probability_mass <- integrate(approxfun(delta, y = p_delta, method = "linear"), -1, 1)$value
+  p_delta <- p_delta / probability_mass
+  P_significant_negative <- integrate(approxfun(delta, y = p_delta, method = "linear"),
+                                      delta[1],-practical_significance)$value
+  P_significant_positive <- integrate(
+    approxfun(delta, y = p_delta, method = "linear"),
+    practical_significance,
+    tail(delta, n = 1)
+  )$value
+  P_significant_double <- P_significant_negative + P_significant_positive
+  
+  printOutput(paste0('The probability that the difference is...'),
+              outputFile)
+  printOutput(
+    paste0(
+      '   ...practically significant in the negative direction is ',
+      format(round(P_significant_negative * 100, 2), nsmall = 2),
+      '%'
+    ),
+    outputFile
+  )
+  printOutput(
+    paste0(
+      '   ...NOT practically significant in the negative direction is ',
+      format(round((
+        1 - P_significant_negative
+      ) * 100, 2), nsmall = 2),
+      '%'
+    ),
+    outputFile
+  )
+  printOutput(
+    paste0(
+      '   ...practically significant in the positive direction is ',
+      format(round(P_significant_positive * 100, 2), nsmall = 2),
+      '%'
+    ),
+    outputFile
+  )
+  printOutput(
+    paste0(
+      '   ...NOT practically significant in the positive direction is ',
+      format(round((
+        1 - P_significant_positive
+      ) * 100, 2), nsmall = 2),
+      '%'
+    ),
+    outputFile
+  )
+  printOutput(
+    paste0(
+      '   ...practically significant in either direction is ',
+      format(round(P_significant_double * 100, 2), nsmall = 2),
+      '%'
+    ),
+    outputFile
+  )
+  printOutput(
+    paste0(
+      '   ...NOT practically significant in either direction is ',
+      format(round((
+        1 - P_significant_double
+      ) * 100, 2), nsmall = 2),
+      '%'
+    ),
+    outputFile
+  )
+  
+  # Plot over probability distribution over D
+  png(filename = file.path(plotFolder, "Difference.png"))
+  plot(
+    delta,
+    p_delta,
+    xlab = "D",
+    ylab = "p(D)",
+    type = "l",
+    lty = "solid",
+    xlim = c(-1, 1),
+    ylim = c(0, max(p_delta) * 1.1),
+    xaxs = "i",
+    yaxs = "i"
+  )
+  abline(v = practical_significance,
+         col = "black",
+         lty = "dashed")
+  abline(
+    v = -practical_significance,
+    col = "black",
+    lty = "dashed"
+  )
+  dev.off()
+  printOutput('', outputFile)
+}
+
+
 scatterplot_scatter <- 0.005
 for (n in 1:length(practical_significances)) {
   practical_significance <- practical_significances[n]
@@ -72,7 +229,7 @@ for (n in 1:length(practical_significances)) {
   ),
   showWarnings = FALSE)
   
-
+  
   ggplot(sleepiness_tasks_combined, aes(x=sleepiness, fill=fill)) +
     geom_histogram(bins=10, colour="black", position="dodge") +
     scale_fill_identity() +
@@ -86,7 +243,6 @@ for (n in 1:length(practical_significances)) {
   
   for (j in 1:length(split_types)) {
     split_type <- split_types[j]
-#    printOutput(paste0('Splitting by ', split_type), outputFile)
     
     dir.create(file.path(
       'Plots',
@@ -109,13 +265,23 @@ for (n in 1:length(practical_significances)) {
     
     for (k in 1:length(median_types)) {
       median_type <- median_types[k]
-     # printOutput(paste0('Calculating median ', median_type), outputFile)
-      outputFile <- file.path('Text_output',
-                              practical_significance_string(practical_significance),
-                              split_type,
-                              paste0(median_type, '.txt'))
       
-      file.create(file.path(outputFile))
+      dir.create(file.path(
+        'Text_output',
+        practical_significance_string(practical_significance),
+        split_type,
+        median_type
+      ),
+      showWarnings = FALSE)
+      
+      dir.create(file.path(
+        'Text_output',
+        practical_significance_string(practical_significance),
+        split_type,
+        median_type,
+        'Individual_tests'
+      ),
+      showWarnings = FALSE)
       
       dir.create(file.path(
         'Plots',
@@ -147,8 +313,14 @@ for (n in 1:length(practical_significances)) {
       
       n_acc <- c('test' = 0, 'control' = 0)
       n_inacc <- c('test' = 0, 'control' = 0)
+      
+      n_acc_by_test <- list()
+      n_inacc_by_test <- list()
       for (l in 1:length(datasets)) {
         dataset <- datasets[l]
+        
+        n_acc_by_test[[dataset]] <-c('test' = 0, 'control' = 0)
+        n_inacc_by_test[[dataset]] <-c('test' = 0, 'control' = 0)
         
         dir.create(
           file.path(
@@ -181,15 +353,35 @@ for (n in 1:length(practical_significances)) {
             performance_above_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance >= current_median_performance
             performance_below_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance < current_median_performance
             # How prone were people to rate themselves accurately w.r.t. the median
+            n_acc_by_test[[dataset]][[group]] <- sum(rating_above_median &
+                                                       performance_above_median)[[1]] + sum(rating_below_median &
+                                                                                              performance_below_median)[[1]]
+            n_acc[[group]] <- n_acc[[group]] + n_acc_by_test[[dataset]][[group]]
             
-            n_acc[[group]] <- n_acc[[group]] + sum(rating_above_median &
-                                                     performance_above_median)[[1]] + sum(rating_below_median &
-                                                                                            performance_below_median)[[1]]
-            n_inacc[[group]] <- n_inacc[[group]] + sum(rating_below_median &
+            n_inacc_by_test[[dataset]][[group]] <- sum(rating_below_median &
                                                          performance_above_median)[[1]] + sum(rating_above_median &
                                                                                                 performance_below_median)[[1]]
+            n_inacc[[group]] <- n_inacc[[group]] + n_inacc_by_test[[dataset]][[group]]
           }
+      
         }
+        outputFile <- file.path('Text_output',
+                                practical_significance_string(practical_significance),
+                                split_type,
+                                median_type,
+                                'Individual_tests',
+                                paste0(dataset, '.txt'))
+        file.create(file.path(outputFile))
+        plotFolder <- file.path("Plots",
+                                practical_significance_string(practical_significance),
+                                split_type,
+                                median_type,
+                                'Individual_tests',
+                                dataset)
+        fullAnalysis(n_acc_by_test[[dataset]],
+                     n_inacc_by_test[[dataset]],
+                     outputFile,
+                     plotFolder)
         
         # Histograms across real performance, self-rated performance and sleepiness
         hist_targets = c('performance', 'rating', 'sleepiness')
@@ -306,176 +498,18 @@ for (n in 1:length(practical_significances)) {
         }
       }
       
-      for (i in 1:2) {
-        group <- groups[i]
-        frac_acc <- n_acc[[group]] / (n_acc[[group]] + n_inacc[[group]])
-        printOutput(paste0(
-          'In the ',
-          group,
-          ' group ',
-          format(round(frac_acc * 100, 2), nsmall = 2),
-          '% ratings were accurate'
-        ),
-        outputFile)
-      }
-      
-      L_cont <- L(n_acc[['control']], n_inacc[['control']], P_vector)
-      L_test <- L(n_acc[['test']], n_inacc[['test']], P_vector)
-      max_L <- max(c(max(L_cont), max(L_test)))
-      
-      # Probability distributions over P
-      png(
-        filename = file.path(
-          "Plots",
-          practical_significance_string(practical_significance),
-          split_type,
-          median_type,
-          "Aggregate",
-          "Metacognitive_performance.png"
-        )
-      )
-      plot(
-        c(),
-        c(),
-        xlab = "P^x",
-        ylab = "p(P^x)",
-        xlim = c(0, 1),
-        ylim = c(0, max_L),
-        cex = 10
-      )
-      lines(
-        P_vector,
-        L_cont,
-        type = "l",
-        lty = "solid",
-        xaxs = "i",
-        yaxs = "i",
-        col = colours[['control']]
-      )
-      lines(
-        P_vector,
-        L_test,
-        type = "l",
-        lty = "solid",
-        xaxs = "i",
-        yaxs = "i",
-        col = colours[['test']]
-      )
-      
-      legend(
-        0,
-        max_L,
-        legend = colour_legend,
-        cex = 0.8,
-        pch = 1,
-        col = c(colours[['control']], colours[['test']])
-      )
-      dev.off()
-      
-      # Test - control
-      p_delta <- convolve(L_test, L_cont, type = 'open')
-      
-      probability_mass <- integrate(approxfun(delta, y = p_delta, method = "linear"), -1, 1)$value
-      p_delta <- p_delta / probability_mass
-      P_significant_negative <- integrate(approxfun(delta, y = p_delta, method = "linear"),
-                                          delta[1],-practical_significance)$value
-      P_significant_positive <- integrate(
-        approxfun(delta, y = p_delta, method = "linear"),
-        practical_significance,
-        tail(delta, n = 1)
-      )$value
-      P_significant_double <- P_significant_negative + P_significant_positive
-      
-      printOutput(paste0('The probability that the difference is...'),
-                  outputFile)
-      printOutput(
-        paste0(
-          '   ...practically significant in the negative direction is ',
-          format(round(P_significant_negative * 100, 2), nsmall = 2),
-          '%'
-        ),
-        outputFile
-      )
-      printOutput(
-        paste0(
-          '   ...NOT practically significant in the negative direction is ',
-          format(round((
-            1 - P_significant_negative
-          ) * 100, 2), nsmall = 2),
-          '%'
-        ),
-        outputFile
-      )
-      printOutput(
-        paste0(
-          '   ...practically significant in the positive direction is ',
-          format(round(P_significant_positive * 100, 2), nsmall = 2),
-          '%'
-        ),
-        outputFile
-      )
-      printOutput(
-        paste0(
-          '   ...NOT practically significant in the positive direction is ',
-          format(round((
-            1 - P_significant_positive
-          ) * 100, 2), nsmall = 2),
-          '%'
-        ),
-        outputFile
-      )
-      printOutput(
-        paste0(
-          '   ...practically significant in either direction is ',
-          format(round(P_significant_double * 100, 2), nsmall = 2),
-          '%'
-        ),
-        outputFile
-      )
-      printOutput(
-        paste0(
-          '   ...NOT practically significant in either direction is ',
-          format(round((
-            1 - P_significant_double
-          ) * 100, 2), nsmall = 2),
-          '%'
-        ),
-        outputFile
-      )
-      
-      # Plot over probability distribution over D
-      png(
-        filename = file.path(
-          "Plots",
-          practical_significance_string(practical_significance),
-          split_type,
-          median_type,
-          "Aggregate",
-          "Difference.png"
-        )
-      )
-      plot(
-        delta,
-        p_delta,
-        xlab = "D",
-        ylab = "p(D)",
-        type = "l",
-        lty = "solid",
-        xlim = c(-1, 1),
-        ylim = c(0, max(p_delta) * 1.1),
-        xaxs = "i",
-        yaxs = "i"
-      )
-      abline(v = practical_significance,
-             col = "black",
-             lty = "dashed")
-      abline(
-        v = -practical_significance,
-        col = "black",
-        lty = "dashed"
-      )
-      dev.off()
+      outputFile <- file.path('Text_output',
+                              practical_significance_string(practical_significance),
+                              split_type,
+                              median_type,
+                              paste0('Aggregate.txt'))
+      file.create(file.path(outputFile))
+      plotFolder <- file.path("Plots",
+                              practical_significance_string(practical_significance),
+                              split_type,
+                              median_type,
+                              "Aggregate")
+      fullAnalysis(n_acc, n_inacc, outputFile, plotFolder)
     }
-    printOutput('', outputFile)
   }
 }
