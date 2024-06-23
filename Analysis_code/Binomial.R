@@ -418,15 +418,7 @@ for (n in 1:length(practical_significances)) {
             scale_fill_identity() +
             labs(x = hist_names[[target]])
           
-          ggsave(file.path(
-            "Plots",
-            practical_significance_string(practical_significance),
-            split_type,
-            median_type,
-            "Individual_tests",
-            dataset,
-            paste0(hist_names[[target]], ".png")
-          )
+          ggsave(file.path(plotFolder, paste0(hist_names[[target]], ".png"))
           )
         }
         
@@ -435,17 +427,7 @@ for (n in 1:length(practical_significances)) {
         xbounds <- c(list(plot_bounds[['narrow']][['rating']]), list(plot_bounds[['narrow']][['sleepiness']]))
         xdata <- c('rating3', 'rating1')
         for (x in 1:2) {
-          png(
-            filename = file.path(
-              "Plots",
-              practical_significance_string(practical_significance),
-              split_type,
-              median_type,
-              "Individual_tests",
-              dataset,
-              paste0("Actual_performance_", xlab[x], ".png")
-            )
-          )
+          png(filename = file.path(plotFolder,paste0("Actual_performance_", xlab[x], ".png")))
           plot(
             c(),
             c(),
