@@ -21,7 +21,7 @@ plot_bounds <- list(
       'stroop' = c(100, 1000),
       'simple attention' = c(100, 1000)
     ),
-    'rating' = c(0, 10),
+    'rating' = c(0, 9),
     'sleepiness' = c(0, 9)
   ),
   'wide' = list(
@@ -42,10 +42,16 @@ logB <- function(alpha, beta) {
   return(lgamma(alpha) + lgamma(beta) - lgamma(alpha + beta))
 }
 
-L <- function(n_above, n_below, P_vector) {
-  log_L <- n_above * log(P_vector) +
-    n_below * log(1 - P_vector) -
-    logB(n_above + 1, n_below + 1)
+L <- function(n_acc, n_inacc, P_vector) {
+  log_L <- n_acc * log(P_vector) +
+    n_inacc * log(1 - P_vector) -
+    logB(n_acc + 1, n_inacc + 1)
+  if (n_acc == 0) {
+    log_L[1] <- - logB(n_acc + 1, n_inacc + 1)
+  }
+  if (n_inacc == 0) {
+    log_L[length(log_L)] <- - logB(n_acc + 1, n_inacc + 1)
+  }
   return(exp(log_L))
 }
 
@@ -59,18 +65,31 @@ practical_significance_string <- function(practical_significance) {
   return(path_string)
 }
 
-fullAnalysis <- function(n_acc, n_inacc, outputFile, plotFolder) {
+fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plotFolder) {
   for (i in 1:2) {
     group <- groups[i]
-    frac_acc <- n_acc[[group]] / (n_acc[[group]] + n_inacc[[group]])
-    printOutput(paste0(
-      'In the ',
-      group,
-      ' group ',
-      format(round(frac_acc * 100, 2), nsmall = 2),
-      '% ratings were accurate'
-    ),
-    outputFile)
+    total <- n_acc[[group]] + n_inacc[[group]]
+    if (total > 0) {
+      frac_acc <- n_acc[[group]] / total
+      printOutput(paste0(
+        'In the ',
+        group,
+        ' group ',
+        format(round(frac_acc * 100, 2), nsmall = 2),
+        '% of ratings were accurate'
+      ),
+      outputFile)} else {
+        printOutput(paste0(
+          'In the ',
+          group,
+          ' group ',
+          n_acc[[group]],
+          ' out of ',
+          total,
+          ' ratings were accurate'
+        ),
+        outputFile)
+      }
   }
   
   L_cont <- L(n_acc[['control']], n_inacc[['control']], P_vector)
@@ -229,7 +248,6 @@ for (n in 1:length(practical_significances)) {
   ),
   showWarnings = FALSE)
   
-  
   ggplot(sleepiness_tasks_combined, aes(x=sleepiness, fill=fill)) +
     geom_histogram(bins=10, colour="black", position="dodge") +
     scale_fill_identity() +
@@ -363,7 +381,7 @@ for (n in 1:length(practical_significances)) {
                                                                                                 performance_below_median)[[1]]
             n_inacc[[group]] <- n_inacc[[group]] + n_inacc_by_test[[dataset]][[group]]
           }
-      
+          
         }
         outputFile <- file.path('Text_output',
                                 practical_significance_string(practical_significance),
@@ -380,6 +398,7 @@ for (n in 1:length(practical_significances)) {
                                 dataset)
         fullAnalysis(n_acc_by_test[[dataset]],
                      n_inacc_by_test[[dataset]],
+                     practical_significance,
                      outputFile,
                      plotFolder)
         
@@ -491,7 +510,69 @@ for (n in 1:length(practical_significances)) {
                               split_type,
                               median_type,
                               "Aggregate")
-      fullAnalysis(n_acc, n_inacc, outputFile, plotFolder)
+      fullAnalysis(n_acc, n_inacc, practical_significance, outputFile, plotFolder)
     }
   }
+  
+  # Here we run some final sanity checks.
+  dir.create(file.path(
+    'Plots',
+    practical_significance_string(practical_significance),
+    'Sanity_checks'
+  ),
+  showWarnings = FALSE)
+  dir.create(file.path(
+    'Text_output',
+    practical_significance_string(practical_significance),
+    'Sanity_checks'
+  ),
+  showWarnings = FALSE)
+  
+  # What if just have no data?
+  dir.create(file.path(
+    'Plots',
+    practical_significance_string(practical_significance),
+    'Sanity_checks',
+    'No_data'
+  ),
+  showWarnings = FALSE)
+  
+  outputFile <- file.path('Text_output',
+                          practical_significance_string(practical_significance),
+                          'Sanity_checks',
+                          'No_data.txt')
+  file.create(file.path(outputFile))
+  plotFolder <- file.path('Plots',
+                          practical_significance_string(practical_significance),
+                          'Sanity_checks',
+                          'No_data')
+  
+  fullAnalysis(c('test' = 0, 'control' = 0),
+               c('test' = 0, 'control' = 0),
+               practical_significance,
+               outputFile,
+               plotFolder)
+  
+  # What if everybody got it right?
+  dir.create(file.path(
+    'Plots',
+    practical_significance_string(practical_significance),
+    'Sanity_checks',
+    'All_correct'
+  ),
+  showWarnings = FALSE)
+  
+  outputFile <- file.path('Text_output',
+                          practical_significance_string(practical_significance),
+                          'Sanity_checks',
+                          'All_correct.txt')
+  
+  file.create(file.path(outputFile))
+
+  fullAnalysis(c('test' = 182, 'control' = 182),
+               c('test' = 0, 'control' = 0),
+               practical_significance,
+               outputFile,
+               plotFolder)
 }
+
