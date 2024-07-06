@@ -569,8 +569,12 @@ for (n in 1:length(practical_significances)) {
   
   file.create(file.path(outputFile))
 
-  fullAnalysis(c('test' = 182, 'control' = 182),
-               c('test' = 0, 'control' = 0),
+  plotFolder <- file.path('Plots',
+                          practical_significance_string(practical_significance),
+                          'Sanity_checks',
+                          'All_correct')
+  fullAnalysis(c('test' = 0, 'control' = 91 * length(datasets)),
+               c('test' = 91 * length(datasets), 'control' = 0),
                practical_significance,
                outputFile,
                plotFolder)
