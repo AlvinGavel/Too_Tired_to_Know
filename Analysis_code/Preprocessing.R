@@ -4,13 +4,14 @@ library(pracma)
 library(stringr)
 library(scales)
 library(ggplot2)
+library(latex2exp)
 
 printOutput <- function(string, filePath) {
   print(string)
   write(string, filePath, append=TRUE)
 }
 
-colours <- c('test' = "#FF0033", 'control' = "#0000FF")
+colours <- c('test' = "#FFC20A", 'control' = "#0C7BDC")
 
 dir.create('Plots',
            showWarnings = FALSE)
@@ -71,6 +72,13 @@ for (i in 1:length(datasets)) {
   
   file_data <- read.csv(file = file.path('Data', filenames[[dataset]]))
   
+  if (dataset == 'working memory') {
+    count_twelves = sum(file_data$order_in_test == 12)
+    count_tens = sum(file_data$order_in_test == 10)
+    printOutput(paste('In the arithmetic test', count_twelves, 'participants finished all of 12 rounds'), outputFile)
+    printOutput(paste('While', count_tens- count_twelves, 'participants only did 10 rounds'), outputFile)
+  }
+  
   if (dataset == 'arithmetic') {
     data_processed <- file_data %>% group_by(ID, time) %>% summarize(performance = 120 * 1000 * sum(correct) / (max(time_start_battery) - min(time_start_battery)),
                                                                      session_length = max(time_start_battery) - min(time_start_battery))
@@ -87,6 +95,7 @@ for (i in 1:length(datasets)) {
     data_processed <- file_data %>% group_by(ID, time) %>% summarize(performance = mean(correct),
                                                                      session_length = max(time_start_battery) - min(time_start_battery))
   }
+  
   min_performance[dataset] <- min(data_processed$performance)
   max_performance[dataset] <- max(data_processed$performance)
   session_happened <- data_processed[data_processed$session_length > 0,]

@@ -21,8 +21,8 @@ plot_bounds <- list(
       'stroop' = c(100, 1000),
       'simple attention' = c(100, 1000)
     ),
-    'rating' = c(0, 9),
-    'sleepiness' = c(0, 9)
+    'rating' = c(1, 9),
+    'sleepiness' = c(1, 9)
   ),
   'wide' = list(
     'performance' = list(
@@ -32,10 +32,16 @@ plot_bounds <- list(
       'stroop' = c(100, max_performance[['stroop']]),
       'simple attention' = c(100, max_performance[['simple attention']])
     ),
-    'rating' = c(0, 10),
-    'sleepiness' = c(0, 9)
+    'rating' = c(1, 9),
+    'sleepiness' = c(1, 9)
   )
 )
+
+performance_meaning = c('arithmetic' = 'Correct responses / minute',
+                        'episodic memory' = 'Frac. correct responses',
+                        'working memory' = 'Mean reaction time [ms]',
+                        'stroop' = 'Frac. correct responses',
+                        'simple attention' = 'Mean reaction time [ms]')
 
 # Function definitions
 logB <- function(alpha, beta) {
@@ -98,14 +104,18 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
   
   # Probability distributions over P
   png(filename = file.path(plotFolder, "Metacognitive_performance.png"))
+  par(mar=c(5,6,1,1) + 0.1)
   plot(
     c(),
     c(),
-    xlab = "P^x",
-    ylab = "p(P^x)",
+    xlab = TeX('$P^x$'),
+    ylab = TeX('$p\\left( P^x \\right)$'),
     xlim = c(0, 1),
     ylim = c(0, max_L),
-    cex = 10
+    cex.lab = 2,
+    cex.main = 2,
+    cex.axis = 2,
+    cex.sub = 2
   )
   lines(
     P_vector,
@@ -129,7 +139,7 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
     0,
     max_L,
     legend = colour_legend,
-    cex = 0.8,
+    cex = 2,
     pch = 1,
     col = c(colours[['control']], colours[['test']])
   )
@@ -208,17 +218,22 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
   
   # Plot over probability distribution over D
   png(filename = file.path(plotFolder, "Difference.png"))
+  par(mar=c(5,6,1,1) + 0.1)
   plot(
     delta,
     p_delta,
-    xlab = "D",
-    ylab = "p(D)",
+    xlab = TeX("$D$"),
+    ylab = TeX("$p\\left( D \\right)$"),
     type = "l",
     lty = "solid",
     xlim = c(-1, 1),
     ylim = c(0, max(p_delta) * 1.1),
     xaxs = "i",
-    yaxs = "i"
+    yaxs = "i",
+    cex.lab = 2,
+    cex.main = 2,
+    cex.axis = 2,
+    cex.sub = 2
   )
   abline(v = practical_significance,
          col = "black",
@@ -248,10 +263,17 @@ for (n in 1:length(practical_significances)) {
   ),
   showWarnings = FALSE)
   
+  # Sleepiness over all tasks combined
   ggplot(sleepiness_tasks_combined, aes(x=sleepiness, fill=fill)) +
     geom_histogram(bins=10, colour="black", position="dodge") +
     scale_fill_identity() +
-    labs(x = 'Sleepiness')
+    labs(x = 'Sleepiness') +
+    scale_x_continuous(name = hist_names[[target]],
+                       breaks = seq(1, 9, by=1)) +
+    theme(axis.title=element_text(size=20),
+          axis.text.x=element_text(size=20),
+          axis.text.y=element_text(size=20))
+  
   
   ggsave(file.path(
     "Plots",
@@ -435,7 +457,14 @@ for (n in 1:length(practical_significances)) {
           ggplot(hist_df, aes(x=obs, fill=fill)) +
             geom_histogram(bins=10, colour="black", position="dodge") +
             scale_fill_identity() +
-            labs(x = hist_names[[target]])
+            theme(axis.title=element_text(size=20),
+                  axis.text.x=element_text(size=20),
+                  axis.text.y=element_text(size=20)) +
+            {if(target == 'rating' | target == 'sleepiness')
+              scale_x_continuous(name = hist_names[[target]],
+                                 breaks = seq(1, 9, by=1))} +
+            {if(target == 'performance')
+              scale_x_continuous(name = hist_names[[target]])}
           
           ggsave(file.path(plotFolder, paste0(hist_names[[target]], ".png"))
           )
@@ -447,15 +476,20 @@ for (n in 1:length(practical_significances)) {
         xdata <- c('rating3', 'rating1')
         for (x in 1:2) {
           png(filename = file.path(plotFolder,paste0("Actual_performance_", xlab[x], ".png")))
+          par(mar=c(5,7,2,1) + 0.1)
           plot(
             c(),
             c(),
             main = str_to_title(dataset),
-            ylab = "Actual performance",
+            ylab = paste0("Actual performance\n(", performance_meaning[[dataset]], ")"), 
             xlab = xlab[x],
             ylim = plot_bounds[['narrow']][['performance']][[dataset]],
             xlim = xbounds[[x]],
-            cex = 10
+            xaxp = c(1, 9, 8),
+            cex.lab = 2,
+            cex.main = 2,
+            cex.axis = 2,
+            cex.sub = 2
           )
           for (time in 1:3) {
             y_range <- plot_bounds[['narrow']][['performance']][[dataset]][2] - plot_bounds[['narrow']][['performance']][[dataset]][1]
@@ -489,11 +523,11 @@ for (n in 1:length(practical_significances)) {
           y_range <- plot_bounds[['narrow']][['performance']][[dataset]][2] - y_min
           legend(
             xbounds[[x]][1],
-            y_min + 0.1 * y_range,
+            y_min + 0.25 * y_range,
             legend = colour_legend,
-            cex = 0.8,
+            cex = 2,
             pch = 1,
-            col = c(colours[['control']], colours[['test']])
+            col = c(colours[['control']], colours[['test']]),
           )
           dev.off()
         }
@@ -568,7 +602,7 @@ for (n in 1:length(practical_significances)) {
                           'All_correct.txt')
   
   file.create(file.path(outputFile))
-
+  
   plotFolder <- file.path('Plots',
                           practical_significance_string(practical_significance),
                           'Sanity_checks',
