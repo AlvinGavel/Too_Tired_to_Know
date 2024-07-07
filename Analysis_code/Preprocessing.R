@@ -75,8 +75,8 @@ for (i in 1:length(datasets)) {
   if (dataset == 'working memory') {
     count_twelves = sum(file_data$order_in_test == 12)
     count_tens = sum(file_data$order_in_test == 10)
-    printOutput(paste('In the arithmetic test', count_twelves, 'participants finished all of 12 rounds'), outputFile)
-    printOutput(paste('While', count_tens- count_twelves, 'participants only did 10 rounds'), outputFile)
+    printOutput(paste('In the working memory test', count_twelves, 'rounds went to 12 rounds'), outputFile)
+    printOutput(paste('While', count_tens- count_twelves, 'rounds only went to 10 rounds'), outputFile)
   }
   
   if (dataset == 'arithmetic') {
