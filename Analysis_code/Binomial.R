@@ -98,8 +98,8 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
       }
   }
   
-  L_cont <- L(n_acc[['control']], n_inacc[['control']], P_vector)
-  L_test <- L(n_acc[['test']], n_inacc[['test']], P_vector)
+  L_cont <- L(n_acc[['Well-rested']], n_inacc[['Well-rested']], P_vector)
+  L_test <- L(n_acc[['Sleep-deprived']], n_inacc[['Sleep-deprived']], P_vector)
   max_L <- max(c(max(L_cont), max(L_test)))
   
   # Probability distributions over P
@@ -124,7 +124,7 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
     lty = "solid",
     xaxs = "i",
     yaxs = "i",
-    col = colours[['control']]
+    col = colours[['Well-rested']]
   )
   lines(
     P_vector,
@@ -133,7 +133,7 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
     lty = "solid",
     xaxs = "i",
     yaxs = "i",
-    col = colours[['test']]
+    col = colours[['Sleep-deprived']]
   )
   legend(
     0,
@@ -141,7 +141,7 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
     legend = colour_legend,
     cex = 2,
     pch = 1,
-    col = c(colours[['control']], colours[['test']])
+    col = c(colours[['Well-rested']], colours[['Sleep-deprived']])
   )
   dev.off()
   
@@ -268,7 +268,7 @@ for (n in 1:length(practical_significances)) {
     geom_histogram(bins=10, colour="black", position="dodge") +
     scale_fill_identity() +
     labs(x = 'Sleepiness') +
-    scale_x_continuous(name = hist_names[[target]],
+    scale_x_continuous(name = 'Sleepiness',
                        breaks = seq(1, 9, by=1)) +
     theme(axis.title=element_text(size=20),
           axis.text.x=element_text(size=20),
@@ -298,7 +298,7 @@ for (n in 1:length(practical_significances)) {
     showWarnings = FALSE)
     
     if (split_type == 'pre-set groups') {
-      colour_legend <- c('Control', 'Test')
+      colour_legend <- c('Well-rested', 'Sleep-deprived')
     } else if (split_type == 'reported sleepiness') {
       colour_legend <- c('Less sleepy', 'More sleepy')
     }
@@ -351,16 +351,16 @@ for (n in 1:length(practical_significances)) {
         showWarnings = FALSE
       )
       
-      n_acc <- c('test' = 0, 'control' = 0)
-      n_inacc <- c('test' = 0, 'control' = 0)
+      n_acc <- c('Sleep-deprived' = 0, 'Well-rested' = 0)
+      n_inacc <- c('Sleep-deprived' = 0, 'Well-rested' = 0)
       
       n_acc_by_test <- list()
       n_inacc_by_test <- list()
       for (l in 1:length(datasets)) {
         dataset <- datasets[l]
         
-        n_acc_by_test[[dataset]] <-c('test' = 0, 'control' = 0)
-        n_inacc_by_test[[dataset]] <-c('test' = 0, 'control' = 0)
+        n_acc_by_test[[dataset]] <-c('Sleep-deprived' = 0, 'Well-rested' = 0)
+        n_inacc_by_test[[dataset]] <-c('Sleep-deprived' = 0, 'Well-rested' = 0)
         
         dir.create(
           file.path(
@@ -432,27 +432,26 @@ for (n in 1:length(practical_significances)) {
           'sleepiness' = 'Sleepiness'
         )
         hist_test = list(
-          'performance' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['test']]$performance,
-          'rating' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['test']]$rating3,
-          'sleepiness' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['test']]$rating1
+          'performance' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Sleep-deprived']]$performance,
+          'rating' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Sleep-deprived']]$rating3,
+          'sleepiness' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Sleep-deprived']]$rating1
         )
         hist_control = list(
-          'performance' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['control']]$performance,
-          'rating' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['control']]$rating3,
-          'sleepiness' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['control']]$rating1
+          'performance' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Well-rested']]$performance,
+          'rating' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Well-rested']]$rating3,
+          'sleepiness' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Well-rested']]$rating1
         )
         hist_bounds = list(
           'performance' = plot_bounds[['wide']][['performance']][[dataset]],
           'rating' = plot_bounds[['wide']][['rating']],
           'sleepiness' = plot_bounds[['wide']][['sleepiness']]
-          
         )
         for (t in 1:3) {
           target = hist_targets[t]
           
-          hist_df <- rbind(data.frame(fill=colours[['test']],
+          hist_df <- rbind(data.frame(fill=colours[['Sleep-deprived']],
                                       obs=hist_test[[target]]),
-                           data.frame(fill=colours[['control']],
+                           data.frame(fill=colours[['Well-rested']],
                                       obs=hist_control[[target]]))
           ggplot(hist_df, aes(x=obs, fill=fill)) +
             geom_histogram(bins=10, colour="black", position="dodge") +
@@ -527,7 +526,7 @@ for (n in 1:length(practical_significances)) {
             legend = colour_legend,
             cex = 2,
             pch = 1,
-            col = c(colours[['control']], colours[['test']]),
+            col = c(colours[['Well-rested']], colours[['Sleep-deprived']]),
           )
           dev.off()
         }
@@ -581,8 +580,8 @@ for (n in 1:length(practical_significances)) {
                           'Sanity_checks',
                           'No_data')
   
-  fullAnalysis(c('test' = 0, 'control' = 0),
-               c('test' = 0, 'control' = 0),
+  fullAnalysis(c('Sleep-deprived' = 0, 'Well-rested' = 0),
+               c('Sleep-deprived' = 0, 'Well-rested' = 0),
                practical_significance,
                outputFile,
                plotFolder)
@@ -607,8 +606,8 @@ for (n in 1:length(practical_significances)) {
                           practical_significance_string(practical_significance),
                           'Sanity_checks',
                           'All_correct')
-  fullAnalysis(c('test' = 0, 'control' = 91 * length(datasets)),
-               c('test' = 91 * length(datasets), 'control' = 0),
+  fullAnalysis(c('Sleep-deprived' = 0, 'Well-rested' = 91 * length(datasets)),
+               c('Sleep-deprived' = 91 * length(datasets), 'Well-rested' = 0),
                practical_significance,
                outputFile,
                plotFolder)
