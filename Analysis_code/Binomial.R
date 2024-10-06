@@ -15,10 +15,10 @@ delta <- linspace(-1., 1., delta_steps)
 plot_bounds <- list(
   'narrow' = list(
     'performance' = list(
-      'arithmetic' = c(0.0, max_performance[['arithmetic']]),
+      'throughput' = c(0.0, max_performance[['throughput']]),
       'episodic memory' = c(0.0, 1.0),
       'working memory' = c(0.0, 1.0),
-      'stroop' = c(100, 1000),
+      'executive processing' = c(100, 1000),
       'simple attention' = c(100, 1000)
     ),
     'rating' = c(1, 9),
@@ -26,10 +26,10 @@ plot_bounds <- list(
   ),
   'wide' = list(
     'performance' = list(
-      'arithmetic' = c(0.0, max_performance[['arithmetic']]),
+      'throughput' = c(0.0, max_performance[['throughput']]),
       'episodic memory' = c(0.0, 1.0),
       'working memory' = c(0.0, 1.0),
-      'stroop' = c(100, max_performance[['stroop']]),
+      'executive processing' = c(100, max_performance[['executive processing']]),
       'simple attention' = c(100, max_performance[['simple attention']])
     ),
     'rating' = c(1, 9),
@@ -37,10 +37,10 @@ plot_bounds <- list(
   )
 )
 
-performance_meaning = c('arithmetic' = 'Correct responses / minute',
+performance_meaning = c('throughput' = 'Correct responses / minute',
                         'episodic memory' = 'Frac. correct responses',
-                        'working memory' = 'Mean reaction time [ms]',
-                        'stroop' = 'Frac. correct responses',
+                        'working memory' = 'Frac. correct responses',
+                        'executive processing' = 'Frac. correct responses',
                         'simple attention' = 'Mean reaction time [ms]')
 
 # Function definitions
@@ -69,6 +69,29 @@ practical_significance_string <- function(practical_significance) {
                           format(round(practical_significance * 100, 2), nsmall = 0))
   }
   return(path_string)
+}
+
+plotLegend <- function(plotFolder, split_type) {
+  if (split_type == 'pre-set groups') {
+    colour_legend <- c('Well-rested' = 'Well-rested',
+                         'Sleep-deprived' = 'Sleep-deprived')
+  } else if (split_type == 'reported sleepiness') {
+    colour_legend <- c('Well-rested' = 'Less sleepy',
+                         'Sleep-deprived' = 'More sleepy')
+  }
+
+  png(filename = file.path(plotFolder, "Legend.png"))
+  plot(NULL, axes = FALSE, xlab = "", ylab = "", xlim = c(0, 8), ylim = c(0, 6))
+
+  legend(
+    0,
+    6,
+    legend = c(colour_legend[['Well-rested']], colour_legend[['Sleep-deprived']]),
+    text.col = c(colours[['Well-rested']], colours[['Sleep-deprived']]),
+    cex = 2,
+    pch = NULL
+  )
+  dev.off()
 }
 
 fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plotFolder) {
@@ -134,14 +157,6 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
     xaxs = "i",
     yaxs = "i",
     col = colours[['Sleep-deprived']]
-  )
-  legend(
-    0,
-    max_L,
-    legend = colour_legend,
-    cex = 2,
-    pch = 1,
-    col = c(colours[['Well-rested']], colours[['Sleep-deprived']])
   )
   dev.off()
   
@@ -297,12 +312,6 @@ for (n in 1:length(practical_significances)) {
     ),
     showWarnings = FALSE)
     
-    if (split_type == 'pre-set groups') {
-      colour_legend <- c('Well-rested', 'Sleep-deprived')
-    } else if (split_type == 'reported sleepiness') {
-      colour_legend <- c('Less sleepy', 'More sleepy')
-    }
-    
     for (k in 1:length(median_types)) {
       median_type <- median_types[k]
       
@@ -418,6 +427,7 @@ for (n in 1:length(practical_significances)) {
                                 median_type,
                                 'Individual_tests',
                                 dataset)
+        plotLegend(plotFolder, split_type)
         fullAnalysis(n_acc_by_test[[dataset]],
                      n_inacc_by_test[[dataset]],
                      practical_significance,
@@ -520,14 +530,7 @@ for (n in 1:length(practical_significances)) {
           }
           y_min <- plot_bounds[['narrow']][['performance']][[dataset]][1]
           y_range <- plot_bounds[['narrow']][['performance']][[dataset]][2] - y_min
-          legend(
-            xbounds[[x]][1],
-            y_min + 0.25 * y_range,
-            legend = colour_legend,
-            cex = 2,
-            pch = 1,
-            col = c(colours[['Well-rested']], colours[['Sleep-deprived']]),
-          )
+          
           dev.off()
         }
       }
@@ -614,4 +617,5 @@ for (n in 1:length(practical_significances)) {
                outputFile,
                plotFolder)
 }
+
 

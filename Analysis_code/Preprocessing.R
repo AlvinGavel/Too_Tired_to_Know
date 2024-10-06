@@ -29,23 +29,23 @@ file.create(outputFile)
 
 kss <- read.csv(file = 'Data/kss_data.csv')
 
-datasets <- c('arithmetic',
+datasets <- c('throughput',
               'episodic memory',
               'working memory',
-              'stroop',
+              'executive processing',
               'simple attention'
 )
 
-filenames <- c('arithmetic' = 'arithmetic_data.csv',
+filenames <- c('throughput' = 'arithmetic_data.csv',
                'episodic memory' = 'episodic_memory_data.csv',
                'working memory' = 'working_memory_data.csv',
-               'stroop' = 'Stroop_data.csv',
+               'executive processing' = 'Stroop_data.csv',
                'simple attention' = 'simple_attention_data.csv')
 
-kss_abbrev <- c('arithmetic' = 'M',
+kss_abbrev <- c('throughput' = 'M',
                 'episodic memory' = 'ST',
                 'working memory' = 'W',
-                'stroop' = 'stroop',
+                'executive processing' = 'stroop',
                 'simple attention' = 'reactionTime')
 
 split_types <- c('pre-set groups', 'reported sleepiness')
@@ -79,7 +79,7 @@ for (i in 1:length(datasets)) {
     printOutput(paste('While', count_tens- count_twelves, 'rounds only went to 10 rounds'), outputFile)
   }
   
-  if (dataset == 'arithmetic') {
+  if (dataset == 'throughput') {
     data_processed <- file_data %>% group_by(ID, time) %>% summarize(performance = 120 * 1000 * sum(correct) / (max(time_start_battery) - min(time_start_battery)),
                                                                      session_length = max(time_start_battery) - min(time_start_battery))
     # We might want to adjust this one
@@ -87,7 +87,7 @@ for (i in 1:length(datasets)) {
   } else if (dataset == 'simple attention') {
     data_processed <- file_data %>% group_by(ID, time) %>% summarize(performance = mean(reaction_time),
                                                                      session_length = max(time_start_battery) - min(time_start_battery))
-  } else if (dataset == 'stroop') {
+  } else if (dataset == 'executive processing') {
     response_given <- file_data[file_data$response != '',]
     data_processed <- response_given %>% group_by(ID, time) %>% summarize(performance = mean(reaction_time),
                                                                           session_length = max(time_start_battery) - min(time_start_battery))
