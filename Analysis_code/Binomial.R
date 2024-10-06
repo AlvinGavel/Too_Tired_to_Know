@@ -1,5 +1,5 @@
 source('Analysis_code/Preprocessing.R')
-
+source('Analysis_code/Split_violin.R')
 
 
 # Magic numbers in statistics
@@ -40,7 +40,7 @@ plot_bounds <- list(
 performance_meaning = c('throughput' = 'Correct responses / minute',
                         'episodic memory' = 'Frac. correct responses',
                         'working memory' = 'Frac. correct responses',
-                        'executive processing' = 'Frac. correct responses',
+                        'executive processing' = 'Mean reaction time [ms]',
                         'simple attention' = 'Mean reaction time [ms]')
 
 # Function definitions
@@ -294,8 +294,7 @@ for (n in 1:length(practical_significances)) {
     "Plots",
     "Sleepiness.png")
   )
-  
-  
+
   for (j in 1:length(split_types)) {
     split_type <- split_types[j]
     
@@ -532,6 +531,50 @@ for (n in 1:length(practical_significances)) {
           y_range <- plot_bounds[['narrow']][['performance']][[dataset]][2] - y_min
           
           dev.off()
+        }
+        
+        # Violin plots across real performance and either self-rated performance or sleepiness
+        for (x in 1:2) {
+
+          # The violin plot requires us to collect the performances and ratings over the 3 sessions
+          combined_performance <- list()
+          combined_rating <- list()
+          for (i in 1:2) {
+            group <- groups[i]
+            combined_performance[[group]] <- list()
+            combined_rating[[group]] <- list()
+
+            for (time in 1:3) {
+              combined_performance[[group]] <- c(combined_performance[[group]],
+                                                 data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance)
+              combined_rating[[group]] <- c(combined_rating[[group]],
+                                                data[[dataset]][[split_type]][[median_type]][[time]][[group]][[xdata[x]]])
+            }
+          }
+
+          violin_data <- data.frame(
+            combined_performance = unlist(c(combined_performance[['Sleep-deprived']],
+                                            combined_performance[['Well-rested']])),
+            combined_rating = unlist(c(combined_rating[['Sleep-deprived']],
+                                       combined_rating[['Well-rested']])),
+            group = unlist(c(rep('Sleep-deprived', length(combined_performance[['Sleep-deprived']])),
+                             rep('Well-rested', length(combined_performance[['Well-rested']]))))
+          )
+
+          ggplot(violin_data,
+                 aes(x = as.factor(combined_rating),
+                     y = combined_performance,
+                     fill = group)) +
+                 geom_split_violin() +
+                 scale_fill_manual(values=colours) +
+                 xlab(xlab[x]) +
+                 ylab(paste0("Actual performance\n(", performance_meaning[[dataset]], ")")) +
+                 ggtitle(str_to_title(dataset)) +
+                 guides(fill="none") +
+                 ylim(plot_bounds[['narrow']][['performance']][[dataset]][[1]],
+                      plot_bounds[['narrow']][['performance']][[dataset]][[2]])
+
+          ggsave(file.path(file.path(plotFolder,paste0("Actual_performance_", xlab[x], "_violin.png"))))
         }
       }
 
