@@ -263,7 +263,7 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
 }
 
 
-scatterplot_scatter <- 0.005
+scatterplot_scatter <- 0.05
 for (n in 1:length(practical_significances)) {
   practical_significance <- practical_significances[n]
   
@@ -510,13 +510,13 @@ for (n in 1:length(practical_significances)) {
               performance <- performance + rnorm(
                 length(performance),
                 mean = 0,
-                sd = y_range * scatterplot_scatter
+                sd = 0.05
               )
               
               rating <- data[[dataset]][[split_type]][[median_type]][[time]][[group]][[xdata[x]]]
               rating <- rating + rnorm(length(rating),
                                        mean = 0,
-                                       sd = x_range * scatterplot_scatter)
+                                       sd =  scatterplot_scatter)
               
               points(
                 rating,
@@ -539,16 +539,28 @@ for (n in 1:length(practical_significances)) {
           # The violin plot requires us to collect the performances and ratings over the 3 sessions
           combined_performance <- list()
           combined_rating <- list()
+          # The scatter plot will require some overlaid scatter
+          combined_rating_scattered <- list()
           for (i in 1:2) {
             group <- groups[i]
             combined_performance[[group]] <- list()
             combined_rating[[group]] <- list()
-
+            combined_rating_scattered[[group]] <- list()
+            
             for (time in 1:3) {
               combined_performance[[group]] <- c(combined_performance[[group]],
                                                  data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance)
-              combined_rating[[group]] <- c(combined_rating[[group]],
-                                                data[[dataset]][[split_type]][[median_type]][[time]][[group]][[xdata[x]]])
+              rating <- data[[dataset]][[split_type]][[median_type]][[time]][[group]][[xdata[x]]]
+              combined_rating[[group]] <- c(combined_rating[[group]], rating)
+              scatter <- abs(rnorm(length(rating),
+                                   mean = 0,
+                                   sd = scatterplot_scatter
+              ))
+              if (group == 'Sleep-deprived') {
+                combined_rating_scattered[[group]] <- c(combined_rating_scattered[[group]], rating + scatter)
+              } else {
+                combined_rating_scattered[[group]] <- c(combined_rating_scattered[[group]], rating - scatter)
+              }
             }
           }
 
@@ -563,16 +575,30 @@ for (n in 1:length(practical_significances)) {
           violin_colours <- unlist(c(rep(colours[['Sleep-deprived']], length(combined_performance[['Sleep-deprived']])),
                                      rep(colours[['Well-rested']], length(combined_performance[['Well-rested']]))))
 
+          sleep_deprived_data <- data.frame(combined_performance = unlist(c(combined_performance[['Sleep-deprived']])),
+                                            combined_rating = unlist(c(combined_rating_scattered[['Sleep-deprived']])))
+
+          rested_data <- data.frame(combined_performance = unlist(c(combined_performance[['Well-rested']])),
+                                    combined_rating = unlist(c(combined_rating_scattered[['Well-rested']])))
+                    
           ggplot(violin_data,
                  aes(x = as.factor(combined_rating),
                      y = combined_performance,
                      fill = group)) +
                  geom_split_violin() +
-                 scale_fill_manual(values=colours) +
-                 geom_point(size = 1.0,
+                 scale_fill_manual(values=c('white', 'white')) +
+                 geom_point(data = rested_data,
+                            aes(x = combined_rating,
+                                y = combined_performance),
+                            size = 1.0,
                             stroke = 0,
-                            color = violin_colours,
-                            position = 'jitter')+
+                            color = colours[['Well-rested']]) +
+               geom_point(data = sleep_deprived_data,
+                            aes(x = combined_rating,
+                                y = combined_performance),
+                            size = 1.0,
+                            stroke = 0,
+                            color = colours[['Sleep-deprived']]) +
                  xlab(xlab[x]) +
                  ylab(paste0("Actual performance\n(", performance_meaning[[dataset]], ")")) +
                  ggtitle(str_to_title(dataset)) +
