@@ -560,6 +560,8 @@ for (n in 1:length(practical_significances)) {
             group = unlist(c(rep('Sleep-deprived', length(combined_performance[['Sleep-deprived']])),
                              rep('Well-rested', length(combined_performance[['Well-rested']]))))
           )
+          violin_colours <- unlist(c(rep(colours[['Sleep-deprived']], length(combined_performance[['Sleep-deprived']])),
+                                     rep(colours[['Well-rested']], length(combined_performance[['Well-rested']]))))
 
           ggplot(violin_data,
                  aes(x = as.factor(combined_rating),
@@ -567,6 +569,10 @@ for (n in 1:length(practical_significances)) {
                      fill = group)) +
                  geom_split_violin() +
                  scale_fill_manual(values=colours) +
+                 geom_point(size = 1.0,
+                            stroke = 0,
+                            color = violin_colours,
+                            position = 'jitter')+
                  xlab(xlab[x]) +
                  ylab(paste0("Actual performance\n(", performance_meaning[[dataset]], ")")) +
                  ggtitle(str_to_title(dataset)) +
