@@ -517,7 +517,6 @@ for (n in 1:length(practical_significances)) {
               rating <- rating + rnorm(length(rating),
                                        mean = 0,
                                        sd =  scatterplot_scatter)
-              
               points(
                 rating,
                 performance,
@@ -554,8 +553,7 @@ for (n in 1:length(practical_significances)) {
               combined_rating[[group]] <- c(combined_rating[[group]], rating)
               scatter <- abs(rnorm(length(rating),
                                    mean = 0,
-                                   sd = scatterplot_scatter
-              ))
+                                   sd = scatterplot_scatter)) + scatterplot_scatter
               if (group == 'Sleep-deprived') {
                 combined_rating_scattered[[group]] <- c(combined_rating_scattered[[group]], rating + scatter)
               } else {
@@ -584,9 +582,11 @@ for (n in 1:length(practical_significances)) {
           ggplot(violin_data,
                  aes(x = as.factor(combined_rating),
                      y = combined_performance,
-                     fill = group)) +
+                     fill = group,
+                     color = group)) +
                  geom_split_violin() +
                  scale_fill_manual(values=c('white', 'white')) +
+                 scale_color_manual(values=colours) +
                  geom_point(data = rested_data,
                             aes(x = combined_rating,
                                 y = combined_performance),
