@@ -74,15 +74,15 @@ practical_significance_string <- function(practical_significance) {
 plotLegend <- function(plotFolder, split_type) {
   if (split_type == 'pre-set groups') {
     colour_legend <- c('Well-rested' = 'Well-rested',
-                         'Sleep-deprived' = 'Sleep-deprived')
+                       'Sleep-deprived' = 'Sleep-deprived')
   } else if (split_type == 'reported sleepiness') {
     colour_legend <- c('Well-rested' = 'Less sleepy',
-                         'Sleep-deprived' = 'More sleepy')
+                       'Sleep-deprived' = 'More sleepy')
   }
-
+  
   png(filename = file.path(plotFolder, "Legend.png"))
   plot(NULL, axes = FALSE, xlab = "", ylab = "", xlim = c(0, 8), ylim = c(0, 6))
-
+  
   legend(
     0,
     6,
@@ -294,7 +294,7 @@ for (n in 1:length(practical_significances)) {
     "Plots",
     "Sleepiness.png")
   )
-
+  
   for (j in 1:length(split_types)) {
     split_type <- split_types[j]
     
@@ -534,84 +534,91 @@ for (n in 1:length(practical_significances)) {
         
         # Violin plots across real performance and either self-rated performance or sleepiness
         for (x in 1:2) {
-
-          # The violin plot requires us to collect the performances and ratings over the 3 sessions
-          combined_performance <- list()
-          combined_rating <- list()
-          # The scatter plot will require some overlaid scatter
-          combined_rating_scattered <- list()
-          for (i in 1:2) {
-            group <- groups[i]
-            combined_performance[[group]] <- list()
-            combined_rating[[group]] <- list()
-            combined_rating_scattered[[group]] <- list()
+          
+          # This is a kluge to get around the fact that I can't figure out when
+          # the split violin plot puts each group to the left or the right
+          for (shift in c('Rested_left', 'Rested_right')) {
             
-            for (time in 1:3) {
-              combined_performance[[group]] <- c(combined_performance[[group]],
-                                                 data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance)
-              rating <- data[[dataset]][[split_type]][[median_type]][[time]][[group]][[xdata[x]]]
-              combined_rating[[group]] <- c(combined_rating[[group]], rating)
-              scatter <- abs(rnorm(length(rating),
-                                   mean = 0,
-                                   sd = scatterplot_scatter)) + scatterplot_scatter
-              if (group == 'Sleep-deprived') {
-                combined_rating_scattered[[group]] <- c(combined_rating_scattered[[group]], rating + scatter)
-              } else {
-                combined_rating_scattered[[group]] <- c(combined_rating_scattered[[group]], rating - scatter)
+            # The violin plot requires us to collect the performances and ratings over the 3 sessions
+            combined_performance <- list()
+            combined_rating <- list()
+            # The scatter plot will require some overlaid scatter
+            combined_rating_scattered <- list()
+            for (i in 1:2) {
+              group <- groups[i]
+              combined_performance[[group]] <- list()
+              combined_rating[[group]] <- list()
+              combined_rating_scattered[[group]] <- list()
+              
+              for (time in 1:3) {
+                combined_performance[[group]] <- c(combined_performance[[group]],
+                                                   data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance)
+                rating <- data[[dataset]][[split_type]][[median_type]][[time]][[group]][[xdata[x]]]
+                combined_rating[[group]] <- c(combined_rating[[group]], rating)
+                scatter <- abs(rnorm(length(rating),
+                                     mean = 0,
+                                     sd = scatterplot_scatter)) + scatterplot_scatter
+                if ((group == 'Sleep-deprived' & shift == 'Rested_left') | (group == 'Well-rested' & shift == 'Rested_right')) {
+                  combined_rating_scattered[[group]] <- c(combined_rating_scattered[[group]], rating + scatter)
+                } else {
+                  combined_rating_scattered[[group]] <- c(combined_rating_scattered[[group]], rating - scatter)
+                }
               }
             }
+            
+            violin_data <- data.frame(
+              combined_performance = unlist(c(combined_performance[['Sleep-deprived']],
+                                              combined_performance[['Well-rested']])),
+              combined_rating = unlist(c(combined_rating[['Sleep-deprived']],
+                                         combined_rating[['Well-rested']])),
+              group = unlist(c(rep('Sleep-deprived', length(combined_performance[['Sleep-deprived']])),
+                               rep('Well-rested', length(combined_performance[['Well-rested']]))))
+            )
+            violin_colours <- unlist(c(rep(colours[['Sleep-deprived']], length(combined_performance[['Sleep-deprived']])),
+                                       rep(colours[['Well-rested']], length(combined_performance[['Well-rested']]))))
+            
+            sleep_deprived_data <- data.frame(combined_performance = unlist(c(combined_performance[['Sleep-deprived']])),
+                                              combined_rating = unlist(c(combined_rating_scattered[['Sleep-deprived']])))
+            
+            rested_data <- data.frame(combined_performance = unlist(c(combined_performance[['Well-rested']])),
+                                      combined_rating = unlist(c(combined_rating_scattered[['Well-rested']])))
+            
+            ggplot(violin_data,
+                   aes(x = as.factor(combined_rating),
+                       y = combined_performance,
+                       fill = group,
+                       color = group)) +
+              geom_split_violin(scale = 'width') +
+              scale_fill_manual(values=c('white', 'white'),
+                                guide="none") +
+              scale_color_manual(values=colours,
+                                 guide="none") +
+              geom_point(data = rested_data,
+                         aes(x = combined_rating,
+                             y = combined_performance),
+                         size = 1.0,
+                         stroke = 0,
+                         color = colours[['Well-rested']]) +
+              geom_point(data = sleep_deprived_data,
+                         aes(x = combined_rating,
+                             y = combined_performance),
+                         size = 1.0,
+                         stroke = 0,
+                         color = colours[['Sleep-deprived']]) +
+              xlab(xlab[x]) +
+              ylab(paste0("Actual performance\n(", performance_meaning[[dataset]], ")")) +
+              ggtitle(str_to_title(dataset)) +
+              guides(fill="none") +
+              ylim(plot_bounds[['narrow']][['performance']][[dataset]][[1]],
+                   plot_bounds[['narrow']][['performance']][[dataset]][[2]])
+            
+            ggsave(file.path(file.path(plotFolder,paste0("Actual_performance_", xlab[x], "_violin_", shift, ".png"))))
           }
-
-          violin_data <- data.frame(
-            combined_performance = unlist(c(combined_performance[['Sleep-deprived']],
-                                            combined_performance[['Well-rested']])),
-            combined_rating = unlist(c(combined_rating[['Sleep-deprived']],
-                                       combined_rating[['Well-rested']])),
-            group = unlist(c(rep('Sleep-deprived', length(combined_performance[['Sleep-deprived']])),
-                             rep('Well-rested', length(combined_performance[['Well-rested']]))))
-          )
-          violin_colours <- unlist(c(rep(colours[['Sleep-deprived']], length(combined_performance[['Sleep-deprived']])),
-                                     rep(colours[['Well-rested']], length(combined_performance[['Well-rested']]))))
-
-          sleep_deprived_data <- data.frame(combined_performance = unlist(c(combined_performance[['Sleep-deprived']])),
-                                            combined_rating = unlist(c(combined_rating_scattered[['Sleep-deprived']])))
-
-          rested_data <- data.frame(combined_performance = unlist(c(combined_performance[['Well-rested']])),
-                                    combined_rating = unlist(c(combined_rating_scattered[['Well-rested']])))
-                    
-          ggplot(violin_data,
-                 aes(x = as.factor(combined_rating),
-                     y = combined_performance,
-                     fill = group,
-                     color = group)) +
-                 geom_split_violin() +
-                 scale_fill_manual(values=c('white', 'white')) +
-                 scale_color_manual(values=colours) +
-                 geom_point(data = rested_data,
-                            aes(x = combined_rating,
-                                y = combined_performance),
-                            size = 1.0,
-                            stroke = 0,
-                            color = colours[['Well-rested']]) +
-               geom_point(data = sleep_deprived_data,
-                            aes(x = combined_rating,
-                                y = combined_performance),
-                            size = 1.0,
-                            stroke = 0,
-                            color = colours[['Sleep-deprived']]) +
-                 xlab(xlab[x]) +
-                 ylab(paste0("Actual performance\n(", performance_meaning[[dataset]], ")")) +
-                 ggtitle(str_to_title(dataset)) +
-                 guides(fill="none") +
-                 ylim(plot_bounds[['narrow']][['performance']][[dataset]][[1]],
-                      plot_bounds[['narrow']][['performance']][[dataset]][[2]])
-
-          ggsave(file.path(file.path(plotFolder,paste0("Actual_performance_", xlab[x], "_violin.png"))))
         }
       }
-
-    # Test
-
+      
+      # Test
+      
       outputFile <- file.path('Text_output',
                               practical_significance_string(practical_significance),
                               split_type,
