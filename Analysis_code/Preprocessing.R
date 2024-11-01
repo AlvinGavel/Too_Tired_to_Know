@@ -80,7 +80,7 @@ for (i in 1:length(datasets)) {
   }
   
   if (dataset == 'throughput') {
-    data_processed <- file_data %>% group_by(ID, time) %>% summarize(performance = 120 * 1000 * sum(correct) / (max(time_start_battery) - min(time_start_battery)),
+    data_processed <- file_data %>% group_by(ID, time) %>% summarize(performance = 60 * 1000 * sum(correct) / (max(time_start_battery) - min(time_start_battery)),
                                                                      session_length = max(time_start_battery) - min(time_start_battery))
     # We might want to adjust this one
     data_processed <- data_processed[data_processed$session_length >= 100000 & data_processed$session_length <= 130000,]

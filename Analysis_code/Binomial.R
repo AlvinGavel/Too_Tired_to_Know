@@ -610,7 +610,8 @@ for (n in 1:length(practical_significances)) {
               ggtitle(str_to_title(dataset)) +
               guides(fill="none") +
               ylim(plot_bounds[['narrow']][['performance']][[dataset]][[1]],
-                   plot_bounds[['narrow']][['performance']][[dataset]][[2]])
+                   plot_bounds[['narrow']][['performance']][[dataset]][[2]]) +
+              theme(text = element_text(size = 25)) 
             
             ggsave(file.path(file.path(plotFolder,paste0("Actual_performance_", xlab[x], "_violin_", shift, ".png"))))
           }
