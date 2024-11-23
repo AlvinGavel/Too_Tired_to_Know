@@ -401,15 +401,19 @@ for (n in 1:length(practical_significances)) {
             performance_above_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance >= current_median_performance
             performance_below_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance < current_median_performance
             # How prone were people to rate themselves accurately w.r.t. the median
-            n_acc_by_test[[dataset]][[group]] <- sum(rating_above_median &
-                                                       performance_above_median)[[1]] + sum(rating_below_median &
-                                                                                              performance_below_median)[[1]]
-            n_acc[[group]] <- n_acc[[group]] + n_acc_by_test[[dataset]][[group]]
+            n_acc_this_test_this_session <- sum(rating_above_median &
+                                                performance_above_median)[[1]] + sum(rating_below_median &
+                                                                                     performance_below_median)[[1]]
             
-            n_inacc_by_test[[dataset]][[group]] <- sum(rating_below_median &
-                                                         performance_above_median)[[1]] + sum(rating_above_median &
-                                                                                                performance_below_median)[[1]]
-            n_inacc[[group]] <- n_inacc[[group]] + n_inacc_by_test[[dataset]][[group]]
+            n_inacc_this_test_this_session <- sum(rating_below_median &
+                                                  performance_above_median)[[1]] + sum(rating_above_median &
+                                                                                       performance_below_median)[[1]]
+            
+            n_acc_by_test[[dataset]][[group]] <- n_acc_by_test[[dataset]][[group]] + n_acc_this_test_this_session
+            n_acc[[group]] <- n_acc[[group]] + n_acc_this_test_this_session
+            
+            n_inacc_by_test[[dataset]][[group]] <- n_inacc_by_test[[dataset]][[group]] + n_inacc_this_test_this_session
+            n_inacc[[group]] <- n_inacc[[group]] + n_inacc_this_test_this_session
           }
           
         }
