@@ -3,8 +3,13 @@ source('Analysis_code/Split_violin.R')
 
 
 # Magic numbers in statistics
+credible_interval_low_bound <- 0.05
+credible_interval_high_bound <- 0.95
+
 main_practical_significance <- 0.1
 practical_significances <- c(0.01, 0.05, 0.1, 0.2, 0.5)
+
+scatterplot_scatter <- 0.05
 
 n_steps <- 1000
 P_vector <- linspace(0., 1., n_steps)
@@ -121,11 +126,42 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
       }
   }
   
-  L_cont <- L(n_acc[['Well-rested']], n_inacc[['Well-rested']], P_vector)
-  L_test <- L(n_acc[['Sleep-deprived']], n_inacc[['Sleep-deprived']], P_vector)
-  max_L <- max(c(max(L_cont), max(L_test)))
+  pP <- list('Well-rested' = L(n_acc[['Well-rested']], n_inacc[['Well-rested']], P_vector),
+             'Sleep-deprived' = L(n_acc[['Sleep-deprived']], n_inacc[['Sleep-deprived']], P_vector)
+  )
+  max_pP <- max(c(max(pP[['Well-rested']]), max(pP[['Sleep-deprived']])))
   
-  # Probability distributions over P
+  # Find credible intervals
+  for (i in 1:2) {
+    group <- groups[i]
+    pP_integral <- function(right_bound) {
+      return(integrate(approxfun(P_vector, y = pP[[group]], method = "linear"), 0.0, right_bound)$value)
+    }
+    pP_root_low <- function(right_bound) {
+      return(pP_integral(right_bound) - credible_interval_low_bound)
+    }
+    pP_root_high <- function(right_bound) {
+      return(pP_integral(right_bound) - credible_interval_high_bound)
+    }
+    pP_percentile_low <- pracma::bisect(pP_root_low, 0.0, 1.0)
+    pP_percentile_high <- pracma::bisect(pP_root_high, 0.0, 1.0)
+    
+    printOutput(
+      paste0(
+        '   ',
+        format(round((credible_interval_high_bound - credible_interval_low_bound) * 100, 0), nsmall = 2),
+        '% of the P probability mass for the ',
+        group,
+        ' group is in the interval ',
+        format(round(pP_percentile_low$root, 2), nsmall = 2),
+        ' to ',
+        format(round(pP_percentile_high$root, 2), nsmall = 2)
+      ),
+      outputFile
+    )
+  }
+  
+  # Plot probability distributions over P
   png(filename = file.path(plotFolder, "Metacognitive_performance.png"))
   par(mar=c(5,6,1,1) + 0.1)
   plot(
@@ -134,46 +170,73 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
     xlab = TeX('$P^x$'),
     ylab = TeX('$p\\left( P^x \\right)$'),
     xlim = c(0, 1),
-    ylim = c(0, max_L),
+    ylim = c(0, max_pP),
     cex.lab = 2,
     cex.main = 2,
     cex.axis = 2,
     cex.sub = 2
   )
-  lines(
-    P_vector,
-    L_cont,
-    type = "l",
-    lty = "solid",
-    xaxs = "i",
-    yaxs = "i",
-    col = colours[['Well-rested']]
-  )
-  lines(
-    P_vector,
-    L_test,
-    type = "l",
-    lty = "solid",
-    xaxs = "i",
-    yaxs = "i",
-    col = colours[['Sleep-deprived']]
-  )
+  for (i in 1:2) {
+    group <- groups[i]
+    lines(
+      P_vector,
+      pP[[group]],
+      type = "l",
+      lty = "solid",
+      xaxs = "i",
+      yaxs = "i",
+      col = colours[[group]]
+    )
+  }
   dev.off()
   
   # Test - control
-  p_delta <- convolve(L_test, L_cont, type = 'open')
+  p_delta <- convolve(pP[['Sleep-deprived']], pP[['Well-rested']], type = 'open')
   
-  probability_mass <- integrate(approxfun(delta, y = p_delta, method = "linear"), -1, 1)$value
+  probability_mass <- integrate(
+    approxfun(delta, y = p_delta, method = "linear"),
+    -1,
+    1
+  )$value
   p_delta <- p_delta / probability_mass
-  P_significant_negative <- integrate(approxfun(delta, y = p_delta, method = "linear"),
-                                      delta[1],-practical_significance)$value
+  P_significant_negative <- integrate(
+    approxfun(delta, y = p_delta, method = "linear"),
+    -1,
+    -practical_significance
+  )$value
   P_significant_positive <- integrate(
     approxfun(delta, y = p_delta, method = "linear"),
     practical_significance,
-    tail(delta, n = 1)
+    1
   )$value
   P_significant_double <- P_significant_negative + P_significant_positive
   
+  # Find credible interval
+  delta_integral <- function(right_bound) {
+    return(integrate(approxfun(delta, y = p_delta, method = "linear"), -1, right_bound)$value)
+  }
+  delta_root_low <- function(right_bound) {
+    return(delta_integral(right_bound) - credible_interval_low_bound)
+  }
+  delta_root_high <- function(right_bound) {
+    return(delta_integral(right_bound) - credible_interval_high_bound)
+  }
+  delta_percentile_low <- pracma::bisect(delta_root_low, -1.0, 1.0)
+  delta_percentile_high <- pracma::bisect(delta_root_high, -1.0, 1.0)
+  
+  printOutput(
+    paste0(
+      '   ',
+      format(round((credible_interval_high_bound - credible_interval_low_bound) * 100, 0), nsmall = 2),
+      '% of the delta probability mass is in the interval ',
+      format(round(delta_percentile_low$root, 2), nsmall = 2),
+      ' to ',
+      format(round(delta_percentile_high$root, 2), nsmall = 2)
+    ),
+    outputFile
+  )
+  
+  # Calculate probability of practically significant difference
   printOutput(paste0('The probability that the difference is...'),
               outputFile)
   printOutput(
@@ -263,7 +326,6 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
 }
 
 
-scatterplot_scatter <- 0.05
 for (n in 1:length(practical_significances)) {
   practical_significance <- practical_significances[n]
   
@@ -402,12 +464,12 @@ for (n in 1:length(practical_significances)) {
             performance_below_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance < current_median_performance
             # How prone were people to rate themselves accurately w.r.t. the median
             n_acc_this_test_this_session <- sum(rating_above_median &
-                                                performance_above_median)[[1]] + sum(rating_below_median &
-                                                                                     performance_below_median)[[1]]
+                                                  performance_above_median)[[1]] + sum(rating_below_median &
+                                                                                         performance_below_median)[[1]]
             
             n_inacc_this_test_this_session <- sum(rating_below_median &
-                                                  performance_above_median)[[1]] + sum(rating_above_median &
-                                                                                       performance_below_median)[[1]]
+                                                    performance_above_median)[[1]] + sum(rating_above_median &
+                                                                                           performance_below_median)[[1]]
             
             n_acc_by_test[[dataset]][[group]] <- n_acc_by_test[[dataset]][[group]] + n_acc_this_test_this_session
             n_acc[[group]] <- n_acc[[group]] + n_acc_this_test_this_session

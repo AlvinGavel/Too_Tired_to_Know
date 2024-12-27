@@ -58,7 +58,7 @@ group_sd <- c('Sleep-deprived' = 'Sleep Deprivation',
 
 data <- list()
 data_sessions_combined <- list()
-median_performance <-  list()
+median_performance <- list()
 median_rating <-  list()
 median_sleepiness <-  list()
 min_performance <- list()
@@ -73,8 +73,8 @@ for (i in 1:length(datasets)) {
   file_data <- read.csv(file = file.path('Data', filenames[[dataset]]))
   
   if (dataset == 'working memory') {
-    count_twelves = sum(file_data$order_in_test == 12)
-    count_tens = sum(file_data$order_in_test == 10)
+    count_twelves <- sum(file_data$order_in_test == 12)
+    count_tens <- sum(file_data$order_in_test == 10)
     printOutput(paste('In the working memory test', count_twelves, 'rounds went to 12 rounds'), outputFile)
     printOutput(paste('While', count_tens- count_twelves, 'rounds only went to 10 rounds'), outputFile)
   }
@@ -82,7 +82,6 @@ for (i in 1:length(datasets)) {
   if (dataset == 'throughput') {
     data_processed <- file_data %>% group_by(ID, time) %>% summarize(performance = 60 * 1000 * sum(correct) / (max(time_start_battery) - min(time_start_battery)),
                                                                      session_length = max(time_start_battery) - min(time_start_battery))
-    # We might want to adjust this one
     data_processed <- data_processed[data_processed$session_length >= 100000 & data_processed$session_length <= 130000,]
   } else if (dataset == 'simple attention') {
     data_processed <- file_data %>% group_by(ID, time) %>% summarize(performance = mean(reaction_time),
