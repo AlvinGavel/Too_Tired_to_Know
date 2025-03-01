@@ -341,7 +341,7 @@ for (n in 1:length(practical_significances)) {
   
   # Sleepiness over all tasks combined
   ggplot(sleepiness_tasks_combined, aes(x=sleepiness, fill=fill)) +
-    geom_bar(bins=9, colour="black", position=position_dodge2(preserve = "single")) +
+    geom_bar(colour="black", position=position_dodge2(preserve = "single")) +
     scale_fill_identity() +
     labs(x = 'Sleepiness') +
     scale_x_continuous(name = 'Sleepiness',
@@ -527,10 +527,11 @@ for (n in 1:length(practical_significances)) {
           ggplot(bar_df, aes(x=obs, fill=fill)) +
             geom_bar(colour="black", position=position_dodge2(preserve = 'single')) +
             scale_fill_identity() +
-            theme(axis.title=element_text(size=20),
-                  axis.text.x=element_text(size=20),
-                  axis.text.y=element_text(size=20)) +
-            scale_x_continuous(name = bar_names[[target]], breaks = seq(1, 9, by=1))
+            theme(text = element_text(size = 25)) +
+            scale_x_continuous(name = bar_names[[target]],
+                               breaks = seq(1, 9, by=1)) +
+            ylab('Counts') +
+            ggtitle(str_to_title(dataset))
           
           ggsave(file.path(plotFolder, paste0(bar_names[[target]], '.png')))
         }
@@ -548,10 +549,13 @@ for (n in 1:length(practical_significances)) {
           ggplot(bar_df, aes(x=obs, fill=fill)) +
             geom_histogram(bins=9, colour="black", position=position_dodge2(preserve = 'single')) +
             scale_fill_identity() +
-            theme(axis.title=element_text(size=20),
-                  axis.text.x=element_text(size=20),
-                  axis.text.y=element_text(size=20)) +
-           scale_x_continuous(name = 'Actual_performance')
+            theme(text = element_text(size = 25)) +
+            ggtitle(str_to_title(dataset)) +
+            scale_x_continuous(name = paste0("Actual performance\n(", performance_meaning[[dataset]], ")"),
+                               breaks = seq(1, 9, by=1)) +
+            ylab('Counts') +
+            ggtitle(str_to_title(dataset))
+          
           
           ggsave(file.path(plotFolder, paste0('Actual_performance.png')))
 
