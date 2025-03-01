@@ -87,7 +87,6 @@ plotLegend <- function(plotFolder, split_type) {
   
   png(filename = file.path(plotFolder, "Legend.png"))
   plot(NULL, axes = FALSE, xlab = "", ylab = "", xlim = c(0, 8), ylim = c(0, 6))
-  
   legend(
     0,
     6,
@@ -342,7 +341,7 @@ for (n in 1:length(practical_significances)) {
   
   # Sleepiness over all tasks combined
   ggplot(sleepiness_tasks_combined, aes(x=sleepiness, fill=fill)) +
-    geom_histogram(bins=10, colour="black", position="dodge") +
+    geom_bar(bins=9, colour="black", position=position_dodge2(preserve = "single")) +
     scale_fill_identity() +
     labs(x = 'Sleepiness') +
     scale_x_continuous(name = 'Sleepiness',
@@ -499,50 +498,63 @@ for (n in 1:length(practical_significances)) {
                      outputFile,
                      plotFolder)
         
-        # Histograms across real performance, self-rated performance and sleepiness
-        hist_targets = c('performance', 'rating', 'sleepiness')
-        hist_names = list(
-          'performance' = 'Actual_performance',
+        # Bar plots across self-rated performance and sleepiness
+        bar_targets = c('rating', 'sleepiness')
+        
+        bar_names = list(
           'rating' = 'Self-rated performance',
           'sleepiness' = 'Sleepiness'
         )
-        hist_test = list(
-          'performance' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Sleep-deprived']]$performance,
+        bar_test = list(
           'rating' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Sleep-deprived']]$rating3,
           'sleepiness' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Sleep-deprived']]$rating1
         )
-        hist_control = list(
-          'performance' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Well-rested']]$performance,
+        bar_control = list(
           'rating' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Well-rested']]$rating3,
           'sleepiness' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Well-rested']]$rating1
         )
-        hist_bounds = list(
-          'performance' = plot_bounds[['wide']][['performance']][[dataset]],
+        bar_bounds = list(
           'rating' = plot_bounds[['wide']][['rating']],
           'sleepiness' = plot_bounds[['wide']][['sleepiness']]
         )
-        for (t in 1:3) {
-          target = hist_targets[t]
+        for (t in 1:2) {
+          target = bar_targets[t]
           
-          hist_df <- rbind(data.frame(fill=colours[['Sleep-deprived']],
-                                      obs=hist_test[[target]]),
+          bar_df <- rbind(data.frame(fill=colours[['Sleep-deprived']],
+                                      obs=bar_test[[target]]),
                            data.frame(fill=colours[['Well-rested']],
-                                      obs=hist_control[[target]]))
-          ggplot(hist_df, aes(x=obs, fill=fill)) +
-            geom_histogram(bins=10, colour="black", position="dodge") +
+                                      obs=bar_control[[target]]))
+          ggplot(bar_df, aes(x=obs, fill=fill)) +
+            geom_bar(colour="black", position=position_dodge2(preserve = 'single')) +
             scale_fill_identity() +
             theme(axis.title=element_text(size=20),
                   axis.text.x=element_text(size=20),
                   axis.text.y=element_text(size=20)) +
-            {if(target == 'rating' | target == 'sleepiness')
-              scale_x_continuous(name = hist_names[[target]],
-                                 breaks = seq(1, 9, by=1))} +
-            {if(target == 'performance')
-              scale_x_continuous(name = hist_names[[target]])}
+            scale_x_continuous(name = bar_names[[target]], breaks = seq(1, 9, by=1))
           
-          ggsave(file.path(plotFolder, paste0(hist_names[[target]], ".png"))
-          )
+          ggsave(file.path(plotFolder, paste0(bar_names[[target]], '.png')))
         }
+        
+        # Histogram across real performance
+        hist_target = 'performance'
+        hist_test = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Sleep-deprived']]$performance
+        hist_control = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Well-rested']]$performance
+        hist_bounds = plot_bounds[['wide']][['performance']][[dataset]]
+
+        hist_df <- rbind(data.frame(fill=colours[['Sleep-deprived']],
+                                    obs=hist_test),
+                         data.frame(fill=colours[['Well-rested']],
+                                    obs=hist_control))
+          ggplot(bar_df, aes(x=obs, fill=fill)) +
+            geom_histogram(bins=9, colour="black", position=position_dodge2(preserve = 'single')) +
+            scale_fill_identity() +
+            theme(axis.title=element_text(size=20),
+                  axis.text.x=element_text(size=20),
+                  axis.text.y=element_text(size=20)) +
+           scale_x_continuous(name = 'Actual_performance')
+          
+          ggsave(file.path(plotFolder, paste0('Actual_performance.png')))
+
         
         # Scatterplots across real performance and either self-rated performance or sleepiness
         xlab <- c('Self-rated performance', 'Sleepiness')
