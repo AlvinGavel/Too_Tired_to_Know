@@ -454,13 +454,13 @@ for (n in 1:length(practical_significances)) {
             } else {
               print('Something has gone wrong')
             }
-            current_median_rating <- median_rating[[dataset]][[split_type]][[median_type]][[time]][[comparison]]
-            current_median_performance <- median_performance[[dataset]][[split_type]][[median_type]][[time]][[comparison]]
+            current_median_rating <- median_rating[[dataset]][[split_type]][[time]][[comparison]]
+            current_median_performance <- median_performance[[dataset]][[split_type]][[time]][[comparison]]
             
-            rating_above_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$rating3 >= current_median_rating
-            rating_below_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$rating3 < current_median_rating
-            performance_above_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance >= current_median_performance
-            performance_below_median <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance < current_median_performance
+            rating_above_median <- data[[dataset]][[split_type]][[time]][[group]]$rating3 >= current_median_rating
+            rating_below_median <- data[[dataset]][[split_type]][[time]][[group]]$rating3 < current_median_rating
+            performance_above_median <- data[[dataset]][[split_type]][[time]][[group]]$performance >= current_median_performance
+            performance_below_median <- data[[dataset]][[split_type]][[time]][[group]]$performance < current_median_performance
             # How prone were people to rate themselves accurately w.r.t. the median
             n_acc_this_test_this_session <- sum(rating_above_median &
                                                   performance_above_median)[[1]] + sum(rating_below_median &
@@ -506,12 +506,12 @@ for (n in 1:length(practical_significances)) {
           'sleepiness' = 'Sleepiness'
         )
         bar_test = list(
-          'rating' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Sleep-deprived']]$rating3,
-          'sleepiness' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Sleep-deprived']]$rating1
+          'rating' = data_sessions_combined[[dataset]][[split_type]][['Sleep-deprived']]$rating3,
+          'sleepiness' = data_sessions_combined[[dataset]][[split_type]][['Sleep-deprived']]$rating1
         )
         bar_control = list(
-          'rating' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Well-rested']]$rating3,
-          'sleepiness' = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Well-rested']]$rating1
+          'rating' = data_sessions_combined[[dataset]][[split_type]][['Well-rested']]$rating3,
+          'sleepiness' = data_sessions_combined[[dataset]][[split_type]][['Well-rested']]$rating1
         )
         bar_bounds = list(
           'rating' = plot_bounds[['wide']][['rating']],
@@ -538,8 +538,8 @@ for (n in 1:length(practical_significances)) {
         
         # Histogram across real performance
         hist_target = 'performance'
-        hist_test = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Sleep-deprived']]$performance
-        hist_control = data_sessions_combined[[dataset]][[split_type]][[median_type]][['Well-rested']]$performance
+        hist_test = data_sessions_combined[[dataset]][[split_type]][['Sleep-deprived']]$performance
+        hist_control = data_sessions_combined[[dataset]][[split_type]][['Well-rested']]$performance
         hist_bounds = plot_bounds[['wide']][['performance']][[dataset]]
 
         hist_df <- rbind(data.frame(fill=colours[['Sleep-deprived']],
@@ -588,14 +588,14 @@ for (n in 1:length(practical_significances)) {
             
             for (i in 1:2) {
               group <- groups[i]
-              performance <- data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance
+              performance <- data[[dataset]][[split_type]][[time]][[group]]$performance
               performance <- performance + rnorm(
                 length(performance),
                 mean = 0,
                 sd = 0.05
               )
               
-              rating <- data[[dataset]][[split_type]][[median_type]][[time]][[group]][[xdata[x]]]
+              rating <- data[[dataset]][[split_type]][[time]][[group]][[xdata[x]]]
               rating <- rating + rnorm(length(rating),
                                        mean = 0,
                                        sd =  scatterplot_scatter)
@@ -634,8 +634,8 @@ for (n in 1:length(practical_significances)) {
               
               for (time in 1:3) {
                 combined_performance[[group]] <- c(combined_performance[[group]],
-                                                   data[[dataset]][[split_type]][[median_type]][[time]][[group]]$performance)
-                rating <- data[[dataset]][[split_type]][[median_type]][[time]][[group]][[xdata[x]]]
+                                                   data[[dataset]][[split_type]][[time]][[group]]$performance)
+                rating <- data[[dataset]][[split_type]][[time]][[group]][[xdata[x]]]
                 combined_rating[[group]] <- c(combined_rating[[group]], rating)
                 scatter <- abs(rnorm(length(rating),
                                      mean = 0,
