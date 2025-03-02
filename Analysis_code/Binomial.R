@@ -9,6 +9,8 @@ credible_interval_high_bound <- 0.95
 main_practical_significance <- 0.1
 practical_significances <- c(0.01, 0.05, 0.1, 0.2, 0.5)
 
+rating_practical_significance <- 0.05
+
 scatterplot_scatter <- 0.05
 
 n_steps <- 1000
@@ -102,6 +104,7 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
   for (i in 1:2) {
     group <- groups[i]
     total <- n_acc[[group]] + n_inacc[[group]]
+    # Have a look at this?!
     if (total > 0) {
       frac_acc <- n_acc[[group]] / total
       printOutput(paste0(
@@ -315,13 +318,166 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
   abline(v = practical_significance,
          col = "black",
          lty = "dashed")
-  abline(
-    v = -practical_significance,
-    col = "black",
-    lty = "dashed"
+  abline(v = -practical_significance,
+         col = "black",
+         lty = "dashed"
   )
   dev.off()
   printOutput('', outputFile)
+}
+
+ratingAnalysis <- function(n_rested_above_sleepy_below_common_median,
+                           n_rested_below_sleepy_above_common_median,
+                           practical_significance,
+                           outputFile,
+                           plotFolder) {
+  total <- n_rested_above_sleepy_below_common_median + n_rested_below_sleepy_above_common_median
+  frac_expected <- n_rested_above_sleepy_below_common_median / total
+  
+  printOutput(paste0(
+    format(round(frac_expected * 100, 2), nsmall = 2),
+    '% of participants were rested and rated themselves above the median OR were sleepy and rated themselves below the median'
+  ),
+  outputFile)
+  
+  pP <- L(n_rested_above_sleepy_below_common_median, n_rested_below_sleepy_above_common_median, P_vector)
+  
+  max_pP <- max(pP)
+  
+  # Find credible intervals
+  pP_integral <- function(right_bound) {
+    return(integrate(approxfun(P_vector, y = pP, method = "linear"), 0.0, right_bound)$value)
+  }
+  pP_root_low <- function(right_bound) {
+    return(pP_integral(right_bound) - credible_interval_low_bound)
+  }
+  pP_root_high <- function(right_bound) {
+    return(pP_integral(right_bound) - credible_interval_high_bound)
+  }
+  pP_percentile_low <- pracma::bisect(pP_root_low, 0.0, 1.0)
+  pP_percentile_high <- pracma::bisect(pP_root_high, 0.0, 1.0)
+  
+  printOutput(
+    paste0(
+      '   ',
+      format(round((credible_interval_high_bound - credible_interval_low_bound) * 100, 0), nsmall = 2),
+      '% of the P probability mass is in the interval ',
+      format(round(pP_percentile_low$root, 2), nsmall = 2),
+      ' to ',
+      format(round(pP_percentile_high$root, 2), nsmall = 2)
+    ),
+    outputFile
+  )
+  
+  # Plot probability distributions over P
+  png(filename = file.path(plotFolder, "Rating_performance.png"))
+  par(mar=c(5,6,1,1) + 0.1)
+  plot(
+    c(),
+    c(),
+    xlab = TeX('$P^{exp.}$'),
+    ylab = TeX('$p\\left( P^{exp.} \\right)$'),
+    xlim = c(0, 1),
+    ylim = c(0, max_pP),
+    cex.lab = 2,
+    cex.main = 2,
+    cex.axis = 2,
+    cex.sub = 2
+  )
+  group <- groups[i]
+  lines(
+    P_vector,
+    pP,
+    type = "l",
+    lty = "solid",
+    xaxs = "i",
+    yaxs = "i",
+    col = 'black'
+  )
+  abline(v = 0.5 + rating_practical_significance,
+         col = "black",
+         lty = "dashed")
+  abline(v = 0.5 - rating_practical_significance,
+         col = "black",
+         lty = "dashed"
+  )
+  dev.off()
+  
+  probability_mass <- integrate(
+    approxfun(P_vector, y = pP, method = "linear"),
+    0,
+    1
+  )$value
+  pP <- pP / probability_mass
+  P_significant_negative <- integrate(
+    approxfun(P_vector, y = pP, method = "linear"),
+    0,
+    0.5 - rating_practical_significance
+  )$value
+  P_significant_positive <- integrate(
+    approxfun(P_vector, y = pP, method = "linear"),
+    0.5 + rating_practical_significance,
+    1
+  )$value
+  P_significant_double <- P_significant_negative + P_significant_positive
+  
+  # Calculate probability of practically significant difference
+  printOutput(paste0('The probability that the difference is...'),
+              outputFile)
+  printOutput(
+    paste0(
+      '   ...practically significant in the negative direction is ',
+      format(round(P_significant_negative * 100, 2), nsmall = 2),
+      '%'
+    ),
+    outputFile
+  )
+  printOutput(
+    paste0(
+      '   ...NOT practically significant in the negative direction is ',
+      format(round((
+        1 - P_significant_negative
+      ) * 100, 2), nsmall = 2),
+      '%'
+    ),
+    outputFile
+  )
+  printOutput(
+    paste0(
+      '   ...practically significant in the positive direction is ',
+      format(round(P_significant_positive * 100, 2), nsmall = 2),
+      '%'
+    ),
+    outputFile
+  )
+  printOutput(
+    paste0(
+      '   ...NOT practically significant in the positive direction is ',
+      format(round((
+        1 - P_significant_positive
+      ) * 100, 2), nsmall = 2),
+      '%'
+    ),
+    outputFile
+  )
+  printOutput(
+    paste0(
+      '   ...practically significant in either direction is ',
+      format(round(P_significant_double * 100, 2), nsmall = 2),
+      '%'
+    ),
+    outputFile
+  )
+  printOutput(
+    paste0(
+      '   ...NOT practically significant in either direction is ',
+      format(round((
+        1 - P_significant_double
+      ) * 100, 2), nsmall = 2),
+      '%'
+    ),
+    outputFile
+  )
 }
 
 
@@ -521,9 +677,9 @@ for (n in 1:length(practical_significances)) {
           target = bar_targets[t]
           
           bar_df <- rbind(data.frame(fill=colours[['Sleep-deprived']],
-                                      obs=bar_test[[target]]),
-                           data.frame(fill=colours[['Well-rested']],
-                                      obs=bar_control[[target]]))
+                                     obs=bar_test[[target]]),
+                          data.frame(fill=colours[['Well-rested']],
+                                     obs=bar_control[[target]]))
           ggplot(bar_df, aes(x=obs, fill=fill)) +
             geom_bar(colour="black", position=position_dodge2(preserve = 'single')) +
             scale_fill_identity() +
@@ -541,24 +697,24 @@ for (n in 1:length(practical_significances)) {
         hist_test = data_sessions_combined[[dataset]][[split_type]][['Sleep-deprived']]$performance
         hist_control = data_sessions_combined[[dataset]][[split_type]][['Well-rested']]$performance
         hist_bounds = plot_bounds[['wide']][['performance']][[dataset]]
-
+        
         hist_df <- rbind(data.frame(fill=colours[['Sleep-deprived']],
                                     obs=hist_test),
                          data.frame(fill=colours[['Well-rested']],
                                     obs=hist_control))
-          ggplot(bar_df, aes(x=obs, fill=fill)) +
-            geom_histogram(bins=9, colour="black", position=position_dodge2(preserve = 'single')) +
-            scale_fill_identity() +
-            theme(text = element_text(size = 25)) +
-            ggtitle(str_to_title(dataset)) +
-            scale_x_continuous(name = paste0("Actual performance\n(", performance_meaning[[dataset]], ")"),
-                               breaks = seq(1, 9, by=1)) +
-            ylab('Counts') +
-            ggtitle(str_to_title(dataset))
-          
-          
-          ggsave(file.path(plotFolder, paste0('Actual_performance.png')))
-
+        ggplot(bar_df, aes(x=obs, fill=fill)) +
+          geom_histogram(bins=9, colour="black", position=position_dodge2(preserve = 'single')) +
+          scale_fill_identity() +
+          theme(text = element_text(size = 25)) +
+          ggtitle(str_to_title(dataset)) +
+          scale_x_continuous(name = paste0("Actual performance\n(", performance_meaning[[dataset]], ")"),
+                             breaks = seq(1, 9, by=1)) +
+          ylab('Counts') +
+          ggtitle(str_to_title(dataset))
+        
+        
+        ggsave(file.path(plotFolder, paste0('Actual_performance.png')))
+        
         
         # Scatterplots across real performance and either self-rated performance or sleepiness
         xlab <- c('Self-rated performance', 'Sleepiness')
@@ -700,8 +856,6 @@ for (n in 1:length(practical_significances)) {
         }
       }
       
-      # Test
-      
       outputFile <- file.path('Text_output',
                               practical_significance_string(practical_significance),
                               split_type,
@@ -715,72 +869,113 @@ for (n in 1:length(practical_significances)) {
                               "Aggregate")
       fullAnalysis(n_acc, n_inacc, practical_significance, outputFile, plotFolder)
     }
-  }
-  
-  # Here we run some final sanity checks.
-  dir.create(file.path(
-    'Plots',
-    practical_significance_string(practical_significance),
-    'Sanity_checks'
-  ),
-  showWarnings = FALSE)
-  dir.create(file.path(
-    'Text_output',
-    practical_significance_string(practical_significance),
-    'Sanity_checks'
-  ),
-  showWarnings = FALSE)
-  
-  # What if just have no data?
-  dir.create(file.path(
-    'Plots',
-    practical_significance_string(practical_significance),
-    'Sanity_checks',
-    'No_data'
-  ),
-  showWarnings = FALSE)
-  
-  outputFile <- file.path('Text_output',
-                          practical_significance_string(practical_significance),
-                          'Sanity_checks',
-                          'No_data.txt')
-  file.create(file.path(outputFile))
-  plotFolder <- file.path('Plots',
-                          practical_significance_string(practical_significance),
-                          'Sanity_checks',
-                          'No_data')
-  
-  fullAnalysis(c('Sleep-deprived' = 0, 'Well-rested' = 0),
-               c('Sleep-deprived' = 0, 'Well-rested' = 0),
-               practical_significance,
-               outputFile,
-               plotFolder)
-  
-  # What if everybody got it right?
-  dir.create(file.path(
-    'Plots',
-    practical_significance_string(practical_significance),
-    'Sanity_checks',
-    'All_correct'
-  ),
-  showWarnings = FALSE)
-  
-  outputFile <- file.path('Text_output',
-                          practical_significance_string(practical_significance),
-                          'Sanity_checks',
-                          'All_correct.txt')
-  
-  file.create(file.path(outputFile))
-  
-  plotFolder <- file.path('Plots',
-                          practical_significance_string(practical_significance),
-                          'Sanity_checks',
-                          'All_correct')
-  fullAnalysis(c('Sleep-deprived' = 0, 'Well-rested' = 91 * length(datasets)),
-               c('Sleep-deprived' = 91 * length(datasets), 'Well-rested' = 0),
-               practical_significance,
-               outputFile,
-               plotFolder)
+    
+    # Analysis of ratings
+    outputFile <- file.path('Text_output',
+                            practical_significance_string(practical_significance),
+                            split_type,
+                            'across groups',
+                            paste0('Aggregate.txt'))
+    plotFolder <- file.path('Plots',
+                            practical_significance_string(practical_significance),
+                            split_type,
+                            'across groups',
+                            'Aggregate')
+    
+    n_rested_rating_above_common_median <- 0
+    n_rested_rating_below_common_median <- 0
+    n_sleepy_rating_above_common_median <- 0
+    n_sleepy_rating_below_common_median <- 0
+    for (l in 1:length(datasets)) {
+      dataset <- datasets[l]
+      for (time in 1:3) {
+        current_median_rating <- median_rating[[dataset]][[split_type]][[time]][['across']]
+        current_median_performance <- median_performance[[dataset]][[split_type]][[time]][['across']]
+        
+        n_rested_rating_above_common_median <- sum(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating3 >= current_median_rating)
+        n_rested_rating_below_common_median <- sum(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating3 < current_median_rating)
+        n_sleepy_rating_above_common_median <- sum(data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3 >= current_median_rating)
+        n_sleepy_rating_below_common_median <- sum(data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3 < current_median_rating)
+      }
+    }
+    # As long as both groups are equally big, the probability that a sleepy
+    # person will rate themselves above the common median has to equal the
+    # probability that a rested person rates themselves below
+    
+    n_rested_above_sleepy_below_common_median <- n_rested_rating_above_common_median + n_sleepy_rating_below_common_median
+    n_rested_below_sleepy_above_common_median <- n_rested_rating_below_common_median + n_sleepy_rating_above_common_median
+    
+    ratingAnalysis(n_rested_above_sleepy_below_common_median,
+                   n_rested_below_sleepy_above_common_median,
+                   practical_significance,
+                   outputFile,
+                   plotFolder)
+}
+
+# Here we run some final sanity checks.
+dir.create(file.path(
+  'Plots',
+  practical_significance_string(practical_significance),
+  'Sanity_checks'
+),
+showWarnings = FALSE)
+dir.create(file.path(
+  'Text_output',
+  practical_significance_string(practical_significance),
+  'Sanity_checks'
+),
+showWarnings = FALSE)
+
+# What if just have no data?
+dir.create(file.path(
+  'Plots',
+  practical_significance_string(practical_significance),
+  'Sanity_checks',
+  'No_data'
+),
+showWarnings = FALSE)
+
+outputFile <- file.path('Text_output',
+                        practical_significance_string(practical_significance),
+                        'Sanity_checks',
+                        'No_data.txt')
+file.create(file.path(outputFile))
+plotFolder <- file.path('Plots',
+                        practical_significance_string(practical_significance),
+                        'Sanity_checks',
+                        'No_data')
+
+fullAnalysis(c('Sleep-deprived' = 0, 'Well-rested' = 0),
+             c('Sleep-deprived' = 0, 'Well-rested' = 0),
+             practical_significance,
+             outputFile,
+             plotFolder)
+
+# What if everybody got it right?
+dir.create(file.path(
+  'Plots',
+  practical_significance_string(practical_significance),
+  'Sanity_checks',
+  'All_correct'
+),
+showWarnings = FALSE)
+
+outputFile <- file.path('Text_output',
+                        practical_significance_string(practical_significance),
+                        'Sanity_checks',
+                        'All_correct.txt')
+
+file.create(file.path(outputFile))
+
+plotFolder <- file.path('Plots',
+                        practical_significance_string(practical_significance),
+                        'Sanity_checks',
+                        'All_correct')
+fullAnalysis(c('Sleep-deprived' = 0, 'Well-rested' = 91 * length(datasets)),
+             c('Sleep-deprived' = 91 * length(datasets), 'Well-rested' = 0),
+             practical_significance,
+             outputFile,
+             plotFolder)
 }
 
 
