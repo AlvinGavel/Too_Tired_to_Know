@@ -871,6 +871,51 @@ for (n in 1:length(practical_significances)) {
     }
     
     # Analysis of ratings
+    n_rested_above_sleepy_below_common_median_aggregate <- 0
+    n_rested_below_sleepy_above_common_median_aggregate <- 0
+    for (l in 1:length(datasets)) {
+      dataset <- datasets[l]
+      
+      n_rested_above_sleepy_below_common_median <- 0
+      n_rested_below_sleepy_above_common_median <- 0
+      for (time in 1:3) {
+        current_median_rating <- median_rating[[dataset]][[split_type]][[time]][['across']]
+        current_median_performance <- median_performance[[dataset]][[split_type]][[time]][['across']]
+        
+        # We want to look specifically at those not exactly on the median
+        n_rested_rating_above_common_median <- sum(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating3 > current_median_rating)
+        n_rested_rating_below_common_median <- sum(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating3 < current_median_rating)
+        n_sleepy_rating_above_common_median <- sum(data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3 > current_median_rating)
+        n_sleepy_rating_below_common_median <- sum(data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3 < current_median_rating)
+        
+        # As long as both groups are equally big, the probability that a sleepy
+        # person will rate themselves above the common median has to equal the
+        # probability that a rested person rates themselves below
+        n_rested_above_sleepy_below_common_median <- n_rested_above_sleepy_below_common_median + n_rested_rating_above_common_median + n_sleepy_rating_below_common_median
+        n_rested_below_sleepy_above_common_median <- n_rested_below_sleepy_above_common_median + n_rested_rating_below_common_median + n_sleepy_rating_above_common_median
+      }
+      
+      n_rested_above_sleepy_below_common_median_aggregate <- n_rested_above_sleepy_below_common_median_aggregate + n_rested_above_sleepy_below_common_median
+      n_rested_below_sleepy_above_common_median_aggregate <- n_rested_above_sleepy_below_common_median_aggregate + n_rested_below_sleepy_above_common_median
+      
+      outputFile <- file.path('Text_output',
+                              practical_significance_string(practical_significance),
+                              split_type,
+                              'across groups',
+                              'Individual_tests',
+                              paste0(dataset, '.txt'))
+      plotFolder <- file.path("Plots",
+                              practical_significance_string(practical_significance),
+                              split_type,
+                              'across groups',
+                              'Individual_tests',
+                              dataset)
+      ratingAnalysis(n_rested_above_sleepy_below_common_median,
+                     n_rested_below_sleepy_above_common_median,
+                     practical_significance,
+                     outputFile,
+                     plotFolder)
+    }
     outputFile <- file.path('Text_output',
                             practical_significance_string(practical_significance),
                             split_type,
@@ -881,101 +926,77 @@ for (n in 1:length(practical_significances)) {
                             split_type,
                             'across groups',
                             'Aggregate')
-    
-    n_rested_rating_above_common_median <- 0
-    n_rested_rating_below_common_median <- 0
-    n_sleepy_rating_above_common_median <- 0
-    n_sleepy_rating_below_common_median <- 0
-    for (l in 1:length(datasets)) {
-      dataset <- datasets[l]
-      for (time in 1:3) {
-        current_median_rating <- median_rating[[dataset]][[split_type]][[time]][['across']]
-        current_median_performance <- median_performance[[dataset]][[split_type]][[time]][['across']]
-        
-        n_rested_rating_above_common_median <- sum(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating3 >= current_median_rating)
-        n_rested_rating_below_common_median <- sum(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating3 < current_median_rating)
-        n_sleepy_rating_above_common_median <- sum(data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3 >= current_median_rating)
-        n_sleepy_rating_below_common_median <- sum(data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3 < current_median_rating)
-      }
-    }
-    # As long as both groups are equally big, the probability that a sleepy
-    # person will rate themselves above the common median has to equal the
-    # probability that a rested person rates themselves below
-    
-    n_rested_above_sleepy_below_common_median <- n_rested_rating_above_common_median + n_sleepy_rating_below_common_median
-    n_rested_below_sleepy_above_common_median <- n_rested_rating_below_common_median + n_sleepy_rating_above_common_median
-    
-    ratingAnalysis(n_rested_above_sleepy_below_common_median,
-                   n_rested_below_sleepy_above_common_median,
+    ratingAnalysis(n_rested_above_sleepy_below_common_median_aggregate,
+                   n_rested_below_sleepy_above_common_median_aggregate,
                    practical_significance,
                    outputFile,
                    plotFolder)
-}
-
-# Here we run some final sanity checks.
-dir.create(file.path(
-  'Plots',
-  practical_significance_string(practical_significance),
-  'Sanity_checks'
-),
-showWarnings = FALSE)
-dir.create(file.path(
-  'Text_output',
-  practical_significance_string(practical_significance),
-  'Sanity_checks'
-),
-showWarnings = FALSE)
-
-# What if just have no data?
-dir.create(file.path(
-  'Plots',
-  practical_significance_string(practical_significance),
-  'Sanity_checks',
-  'No_data'
-),
-showWarnings = FALSE)
-
-outputFile <- file.path('Text_output',
-                        practical_significance_string(practical_significance),
-                        'Sanity_checks',
-                        'No_data.txt')
-file.create(file.path(outputFile))
-plotFolder <- file.path('Plots',
-                        practical_significance_string(practical_significance),
-                        'Sanity_checks',
-                        'No_data')
-
-fullAnalysis(c('Sleep-deprived' = 0, 'Well-rested' = 0),
-             c('Sleep-deprived' = 0, 'Well-rested' = 0),
-             practical_significance,
-             outputFile,
-             plotFolder)
-
-# What if everybody got it right?
-dir.create(file.path(
-  'Plots',
-  practical_significance_string(practical_significance),
-  'Sanity_checks',
-  'All_correct'
-),
-showWarnings = FALSE)
-
-outputFile <- file.path('Text_output',
-                        practical_significance_string(practical_significance),
-                        'Sanity_checks',
-                        'All_correct.txt')
-
-file.create(file.path(outputFile))
-
-plotFolder <- file.path('Plots',
-                        practical_significance_string(practical_significance),
-                        'Sanity_checks',
-                        'All_correct')
-fullAnalysis(c('Sleep-deprived' = 0, 'Well-rested' = 91 * length(datasets)),
-             c('Sleep-deprived' = 91 * length(datasets), 'Well-rested' = 0),
-             practical_significance,
-             outputFile,
-             plotFolder)
+  }
+  
+  # Here we run some final sanity checks.
+  dir.create(file.path(
+    'Plots',
+    practical_significance_string(practical_significance),
+    'Sanity_checks'
+  ),
+  showWarnings = FALSE)
+  dir.create(file.path(
+    'Text_output',
+    practical_significance_string(practical_significance),
+    'Sanity_checks'
+  ),
+  showWarnings = FALSE)
+  
+  # What if just have no data?
+  dir.create(file.path(
+    'Plots',
+    practical_significance_string(practical_significance),
+    'Sanity_checks',
+    'No_data'
+  ),
+  showWarnings = FALSE)
+  
+  outputFile <- file.path('Text_output',
+                          practical_significance_string(practical_significance),
+                          'Sanity_checks',
+                          'No_data.txt')
+  file.create(file.path(outputFile))
+  plotFolder <- file.path('Plots',
+                          practical_significance_string(practical_significance),
+                          'Sanity_checks',
+                          'No_data')
+  
+  fullAnalysis(c('Sleep-deprived' = 0, 'Well-rested' = 0),
+               c('Sleep-deprived' = 0, 'Well-rested' = 0),
+               practical_significance,
+               outputFile,
+               plotFolder)
+  
+  # What if everybody got it right?
+  dir.create(file.path(
+    'Plots',
+    practical_significance_string(practical_significance),
+    'Sanity_checks',
+    'All_correct'
+  ),
+  showWarnings = FALSE)
+  
+  outputFile <- file.path('Text_output',
+                          practical_significance_string(practical_significance),
+                          'Sanity_checks',
+                          'All_correct.txt')
+  
+  file.create(file.path(outputFile))
+  
+  plotFolder <- file.path('Plots',
+                          practical_significance_string(practical_significance),
+                          'Sanity_checks',
+                          'All_correct')
+  fullAnalysis(c('Sleep-deprived' = 0, 'Well-rested' = 91 * length(datasets)),
+               c('Sleep-deprived' = 91 * length(datasets), 'Well-rested' = 0),
+               practical_significance,
+               outputFile,
+               plotFolder)
 }
 
 
