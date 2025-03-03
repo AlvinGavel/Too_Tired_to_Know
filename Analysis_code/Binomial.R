@@ -326,13 +326,32 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
   printOutput('', outputFile)
 }
 
-ratingAnalysis <- function(n_rested_above_sleepy_below_common_median,
-                           n_rested_below_sleepy_above_common_median,
+ratingAnalysis <- function(n_rested_rating_above_common_median,
+                           n_rested_rating_below_common_median,
+                           n_sleepy_rating_above_common_median,
+                           n_sleepy_rating_below_common_median,
                            practical_significance,
                            outputFile,
                            plotFolder) {
-  total <- n_rested_above_sleepy_below_common_median + n_rested_below_sleepy_above_common_median
-  frac_expected <- n_rested_above_sleepy_below_common_median / total
+  printOutput(paste0(n_rested_rating_above_common_median,
+    ' were rested and rated themselves above the common median'
+  ),
+  outputFile)
+  printOutput(paste0(n_rested_rating_below_common_median,
+                     ' were rested and rated themselves below the common median'
+  ),
+  outputFile)
+  printOutput(paste0(n_sleepy_rating_above_common_median,
+                     ' were sleepy and rated themselves above the common median'
+  ),
+  outputFile)
+  printOutput(paste0(n_sleepy_rating_below_common_median,
+                     ' were sleepy and rated themselves below the common median'
+  ),
+  outputFile)
+    
+  total <- n_rested_rating_above_common_median + n_rested_rating_below_common_median + n_sleepy_rating_above_common_median + n_sleepy_rating_below_common_median
+  frac_expected <- (n_rested_rating_above_common_median + n_sleepy_rating_below_common_median) / total
   
   printOutput(paste0(
     format(round(frac_expected * 100, 2), nsmall = 2),
@@ -340,7 +359,9 @@ ratingAnalysis <- function(n_rested_above_sleepy_below_common_median,
   ),
   outputFile)
   
-  pP <- L(n_rested_above_sleepy_below_common_median, n_rested_below_sleepy_above_common_median, P_vector)
+  pP <- L(n_rested_rating_above_common_median + n_sleepy_rating_below_common_median,
+          n_rested_rating_below_common_median + n_sleepy_rating_above_common_median,
+          P_vector)
   
   max_pP <- max(pP)
   
@@ -871,32 +892,34 @@ for (n in 1:length(practical_significances)) {
     }
     
     # Analysis of ratings
-    n_rested_above_sleepy_below_common_median_aggregate <- 0
-    n_rested_below_sleepy_above_common_median_aggregate <- 0
+    n_rested_rating_above_common_median_aggregate <- 0
+    n_rested_rating_below_common_median_aggregate <- 0
+    n_sleepy_rating_above_common_median_aggregate <- 0
+    n_sleepy_rating_below_common_median_aggregate <- 0
     for (l in 1:length(datasets)) {
       dataset <- datasets[l]
       
-      n_rested_above_sleepy_below_common_median <- 0
-      n_rested_below_sleepy_above_common_median <- 0
+      n_rested_rating_above_common_median <- 0
+      n_rested_rating_below_common_median <- 0
+      n_sleepy_rating_above_common_median <- 0
+      n_sleepy_rating_below_common_median <- 0
       for (time in 1:3) {
         current_median_rating <- median_rating[[dataset]][[split_type]][[time]][['across']]
-        current_median_performance <- median_performance[[dataset]][[split_type]][[time]][['across']]
         
-        # We want to look specifically at those not exactly on the median
-        n_rested_rating_above_common_median <- sum(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating3 > current_median_rating)
-        n_rested_rating_below_common_median <- sum(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating3 < current_median_rating)
-        n_sleepy_rating_above_common_median <- sum(data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3 > current_median_rating)
-        n_sleepy_rating_below_common_median <- sum(data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3 < current_median_rating)
-        
-        # As long as both groups are equally big, the probability that a sleepy
-        # person will rate themselves above the common median has to equal the
-        # probability that a rested person rates themselves below
-        n_rested_above_sleepy_below_common_median <- n_rested_above_sleepy_below_common_median + n_rested_rating_above_common_median + n_sleepy_rating_below_common_median
-        n_rested_below_sleepy_above_common_median <- n_rested_below_sleepy_above_common_median + n_rested_rating_below_common_median + n_sleepy_rating_above_common_median
+        n_rested_rating_above_common_median <- n_rested_rating_above_common_median +
+                                               sum(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating3 > current_median_rating) 
+        n_rested_rating_below_common_median <- n_rested_rating_below_common_median +
+                                               sum(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating3 < current_median_rating)
+        n_sleepy_rating_above_common_median <- n_sleepy_rating_above_common_median +
+                                               sum(data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3 > current_median_rating)
+        n_sleepy_rating_below_common_median <- n_sleepy_rating_below_common_median +
+                                               sum(data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3 < current_median_rating)
       }
       
-      n_rested_above_sleepy_below_common_median_aggregate <- n_rested_above_sleepy_below_common_median_aggregate + n_rested_above_sleepy_below_common_median
-      n_rested_below_sleepy_above_common_median_aggregate <- n_rested_above_sleepy_below_common_median_aggregate + n_rested_below_sleepy_above_common_median
+      n_rested_rating_above_common_median_aggregate <- n_rested_rating_above_common_median_aggregate + n_rested_rating_above_common_median
+      n_rested_rating_below_common_median_aggregate <- n_rested_rating_below_common_median_aggregate + n_rested_rating_below_common_median
+      n_sleepy_rating_above_common_median_aggregate <- n_sleepy_rating_above_common_median_aggregate + n_sleepy_rating_above_common_median
+      n_sleepy_rating_below_common_median_aggregate <- n_sleepy_rating_below_common_median_aggregate + n_sleepy_rating_below_common_median
       
       outputFile <- file.path('Text_output',
                               practical_significance_string(practical_significance),
@@ -910,8 +933,10 @@ for (n in 1:length(practical_significances)) {
                               'across groups',
                               'Individual_tests',
                               dataset)
-      ratingAnalysis(n_rested_above_sleepy_below_common_median,
-                     n_rested_below_sleepy_above_common_median,
+      ratingAnalysis(n_rested_rating_above_common_median,
+                     n_rested_rating_below_common_median,
+                     n_sleepy_rating_above_common_median,
+                     n_sleepy_rating_below_common_median,
                      practical_significance,
                      outputFile,
                      plotFolder)
@@ -926,8 +951,10 @@ for (n in 1:length(practical_significances)) {
                             split_type,
                             'across groups',
                             'Aggregate')
-    ratingAnalysis(n_rested_above_sleepy_below_common_median_aggregate,
-                   n_rested_below_sleepy_above_common_median_aggregate,
+    ratingAnalysis(n_rested_rating_above_common_median_aggregate,
+                   n_rested_rating_below_common_median_aggregate,
+                   n_sleepy_rating_above_common_median_aggregate,
+                   n_sleepy_rating_below_common_median_aggregate,
                    practical_significance,
                    outputFile,
                    plotFolder)

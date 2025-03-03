@@ -58,7 +58,6 @@ data <- list()
 data_sessions_combined <- list()
 median_performance <- list()
 median_rating <- list()
-central_half_of_ratings <- list()
 median_sleepiness <- list()
 min_performance <- list()
 max_performance <- list()
@@ -113,7 +112,6 @@ for (i in 1:length(datasets)) {
   data_sessions_combined[[dataset]] <- list()
   median_performance[[dataset]] <- list()
   median_rating[[dataset]] <- list()
-  central_half_of_ratings[[dataset]] <- list()
   median_sleepiness[[dataset]] <- list()
   
   sleepiness_tasks_combined <- data.frame(sleepiness=data_merged$rating1,
@@ -133,7 +131,6 @@ for (i in 1:length(datasets)) {
     data_sessions_combined[[dataset]][[split_type]] <- list()
     median_performance[[dataset]][[split_type]] <- list()
     median_rating[[dataset]][[split_type]] <- list()
-    central_half_of_ratings[[dataset]][[split_type]] <- list()
     median_sleepiness[[dataset]][[split_type]] <- list()
     
       
@@ -141,7 +138,6 @@ for (i in 1:length(datasets)) {
       data_sessions_combined[[dataset]][[split_type]] <- list()
       median_performance[[dataset]][[split_type]] <- list()
       median_rating[[dataset]][[split_type]] <- list()
-      central_half_of_ratings[[dataset]][[split_type]] <- list()
       median_sleepiness[[dataset]][[split_type]] <- list()
       
       for (l in 1:length(groups)) {
@@ -188,11 +184,11 @@ for (i in 1:length(datasets)) {
         }
         
         median_rating[[dataset]][[split_type]][[time]][['across']] <- median(c(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating3,
-                                                                                                  data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3))
+                                                                               data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3))
         median_performance[[dataset]][[split_type]][[time]][['across']] <- median(c(data[[dataset]][[split_type]][[time]][['Well-rested']]$performance,
-                                                                                                       data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$performance))
+                                                                                    data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$performance))
         median_sleepiness[[dataset]][[split_type]][[time]][['across']] <- median(c(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating1,
-                                                                                                      data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating1))
+                                                                                   data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating1))
         
         printOutput(paste0('      For time ', time), outputFile)
         printOutput(paste0('         The median self-rated performance in the well-rested group was ', median_rating[[dataset]][[split_type]][[time]][['Well-rested']]), outputFile)
@@ -205,20 +201,6 @@ for (i in 1:length(datasets)) {
         printOutput(paste0('         The median reported sleepiness in the sleep-deprived group was ', median_sleepiness[[dataset]][[split_type]][[time]][['Sleep-deprived']]), outputFile)
         printOutput(paste0('         The median reported sleepiness across groups was ', median_sleepiness[[dataset]][[split_type]][[time]][['across']]), outputFile)
       }
-    
-    for (l in 1:length(groups)) {
-      group <- groups[l]
-      central_half_of_ratings[[dataset]][[split_type]][[group]]  <- quantile(data_sessions_combined[[dataset]][[split_type]][[group]]$rating3, probs = c(0.25, 0.75))
-    }
-    printOutput(paste0('   The central 50% of self-rated performance in the well-rested group lies within ',
-                       central_half_of_ratings[[dataset]][[split_type]][['Well-rested']]["25%"],
-                       '-',
-                       central_half_of_ratings[[dataset]][[split_type]][['Well-rested']]["75%"]), outputFile)
-    printOutput(paste0('   The central 50% of self-rated performance in the sleep-deprived group lies within ',
-                       central_half_of_ratings[[dataset]][[split_type]][['Sleep-deprived']]["25%"],
-                       '-',
-                       central_half_of_ratings[[dataset]][[split_type]][['Sleep-deprived']]["75%"]), outputFile)
-    
   }
 }
 printOutput('', outputFile)
