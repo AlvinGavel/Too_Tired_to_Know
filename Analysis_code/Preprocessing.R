@@ -48,6 +48,7 @@ kss_abbrev <- c('throughput' = 'M',
                 'executive processing' = 'stroop',
                 'simple attention' = 'reactionTime')
 
+median_types <- c('within groups', 'across groups')
 split_types <- c('pre-set groups', 'reported sleepiness')
 
 groups <- c('Sleep-deprived', 'Well-rested')
