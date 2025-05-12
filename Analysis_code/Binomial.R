@@ -22,18 +22,18 @@ delta <- linspace(-1., 1., delta_steps)
 plot_bounds <- list(
   'narrow' = list(
     'performance' = list(
-      'throughput' = c(0.0, max_performance[['throughput']]),
+      'cognitive throughput' = c(0.0, max_performance[['cognitive throughput']]),
       'episodic memory' = c(0.0, 1.0),
       'working memory' = c(0.0, 1.0),
-      'executive processing' = c(100, 1000),
-      'simple attention' = c(100, 1000)
+      'executive processing' = c(500, 1000),
+      'simple attention' = c(250, 1000)
     ),
     'rating' = c(1, 9),
     'sleepiness' = c(1, 9)
   ),
   'wide' = list(
     'performance' = list(
-      'throughput' = c(0.0, max_performance[['throughput']]),
+      'cognitive throughput' = c(0.0, max_performance[['cognitive throughput']]),
       'episodic memory' = c(0.0, 1.0),
       'working memory' = c(0.0, 1.0),
       'executive processing' = c(100, max_performance[['executive processing']]),
@@ -44,7 +44,7 @@ plot_bounds <- list(
   )
 )
 
-performance_meaning = c('throughput' = 'Correct responses / minute',
+performance_meaning = c('cognitive throughput' = 'Correct responses / minute',
                         'episodic memory' = 'Frac. correct responses',
                         'working memory' = 'Frac. correct responses',
                         'executive processing' = 'Mean reaction time [ms]',
@@ -240,7 +240,7 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
   printOutput(
     paste0(
       '   ...practically significant in the negative direction is ',
-      format(round(P_significant_negative * 100, 2), nsmall = 2),
+      format(round(P_significant_negative * 100, 2), nsmall = 4),
       '%'
     ),
     outputFile
@@ -250,7 +250,7 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
       '   ...NOT practically significant in the negative direction is ',
       format(round((
         1 - P_significant_negative
-      ) * 100, 2), nsmall = 2),
+      ) * 100, 2), nsmall = 4),
       '%'
     ),
     outputFile
@@ -258,7 +258,7 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
   printOutput(
     paste0(
       '   ...practically significant in the positive direction is ',
-      format(round(P_significant_positive * 100, 2), nsmall = 2),
+      format(round(P_significant_positive * 100, 2), nsmall = 4),
       '%'
     ),
     outputFile
@@ -268,7 +268,7 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
       '   ...NOT practically significant in the positive direction is ',
       format(round((
         1 - P_significant_positive
-      ) * 100, 2), nsmall = 2),
+      ) * 100, 2), nsmall = 4),
       '%'
     ),
     outputFile
@@ -276,7 +276,7 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
   printOutput(
     paste0(
       '   ...practically significant in either direction is ',
-      format(round(P_significant_double * 100, 2), nsmall = 2),
+      format(round(P_significant_double * 100, 2), nsmall = 4),
       '%'
     ),
     outputFile
@@ -286,7 +286,7 @@ fullAnalysis <- function(n_acc, n_inacc, practical_significance, outputFile, plo
       '   ...NOT practically significant in either direction is ',
       format(round((
         1 - P_significant_double
-      ) * 100, 2), nsmall = 2),
+      ) * 100, 2), nsmall = 4),
       '%'
     ),
     outputFile
@@ -672,8 +672,8 @@ for (n in 1:length(practical_significances)) {
             current_median_rating <- median_rating[[dataset]][[split_type]][[time]][[comparison]]
             current_median_performance <- median_performance[[dataset]][[split_type]][[time]][[comparison]]
             
-            rating_above_median <- data[[dataset]][[split_type]][[time]][[group]]$rating3 >= current_median_rating
-            rating_below_median <- data[[dataset]][[split_type]][[time]][[group]]$rating3 < current_median_rating
+            rating_above_median <- data[[dataset]][[split_type]][[time]][[group]]$rating2 >= current_median_rating
+            rating_below_median <- data[[dataset]][[split_type]][[time]][[group]]$rating2 < current_median_rating
             performance_above_median <- data[[dataset]][[split_type]][[time]][[group]]$performance >= current_median_performance
             performance_below_median <- data[[dataset]][[split_type]][[time]][[group]]$performance < current_median_performance
             # How prone were people to rate themselves accurately w.r.t. the median
@@ -721,11 +721,11 @@ for (n in 1:length(practical_significances)) {
           'sleepiness' = 'Sleepiness'
         )
         bar_test = list(
-          'rating' = data_sessions_combined[[dataset]][[split_type]][['Sleep-deprived']]$rating3,
+          'rating' = data_sessions_combined[[dataset]][[split_type]][['Sleep-deprived']]$rating2,
           'sleepiness' = data_sessions_combined[[dataset]][[split_type]][['Sleep-deprived']]$rating1
         )
         bar_control = list(
-          'rating' = data_sessions_combined[[dataset]][[split_type]][['Well-rested']]$rating3,
+          'rating' = data_sessions_combined[[dataset]][[split_type]][['Well-rested']]$rating2,
           'sleepiness' = data_sessions_combined[[dataset]][[split_type]][['Well-rested']]$rating1
         )
         bar_bounds = list(
@@ -778,7 +778,7 @@ for (n in 1:length(practical_significances)) {
         # Scatterplots across real performance and either self-rated performance or sleepiness
         xlab <- c('Self-rated performance', 'Sleepiness')
         xbounds <- c(list(plot_bounds[['narrow']][['rating']]), list(plot_bounds[['narrow']][['sleepiness']]))
-        xdata <- c('rating3', 'rating1')
+        xdata <- c('rating2', 'rating1')
         for (x in 1:2) {
           tiff(filename = file.path(plotFolder,paste0("Actual_performance_", xlab[x], ".tiff")), width=3600, height=2400, units="px", res = 300)
           par(mar=c(5,7,2,1) + 0.1)
@@ -948,9 +948,9 @@ for (n in 1:length(practical_significances)) {
           current_median_rating <- median_rating[[dataset]][[split_type]][[time]][['across']]
           
           n_rating_above_by_test[[dataset]][[group]] <- n_rating_above_by_test[[dataset]][[group]] +
-            sum(data[[dataset]][[split_type]][[time]][[group]]$rating3 >= current_median_rating)
+            sum(data[[dataset]][[split_type]][[time]][[group]]$rating2 >= current_median_rating)
           n_rating_below_by_test[[dataset]][[group]] <- n_rating_below_by_test[[dataset]][[group]] +
-            sum(data[[dataset]][[split_type]][[time]][[group]]$rating3 < current_median_rating)
+            sum(data[[dataset]][[split_type]][[time]][[group]]$rating2 < current_median_rating)
         }
         
         n_rating_above[[group]] <- n_rating_above[[group]] + n_rating_above_by_test[[dataset]][[group]]

@@ -29,20 +29,20 @@ file.create(outputFile)
 
 kss <- read.csv(file = 'Data/kss_data.csv')
 
-datasets <- c('throughput',
+datasets <- c('cognitive throughput',
               'episodic memory',
               'working memory',
               'executive processing',
               'simple attention'
 )
 
-filenames <- c('throughput' = 'arithmetic_data.csv',
+filenames <- c('cognitive throughput' = 'arithmetic_data.csv',
                'episodic memory' = 'episodic_memory_data.csv',
                'working memory' = 'working_memory_data.csv',
                'executive processing' = 'Stroop_data.csv',
                'simple attention' = 'simple_attention_data.csv')
 
-kss_abbrev <- c('throughput' = 'M',
+kss_abbrev <- c('cognitive throughput' = 'M',
                 'episodic memory' = 'ST',
                 'working memory' = 'W',
                 'executive processing' = 'stroop',
@@ -179,13 +179,13 @@ for (i in 1:length(datasets)) {
             data_sessions_combined[[dataset]][[split_type]][[group]] <- rbind(data_sessions_combined[[dataset]][[split_type]][[group]],
                                                                                              group_data)
           }
-          median_rating[[dataset]][[split_type]][[time]][[group]] <- median(data[[dataset]][[split_type]][[time]][[group]]$rating3)
+          median_rating[[dataset]][[split_type]][[time]][[group]] <- median(data[[dataset]][[split_type]][[time]][[group]]$rating2)
           median_performance[[dataset]][[split_type]][[time]][[group]] <- median(data[[dataset]][[split_type]][[time]][[group]]$performance)
           median_sleepiness[[dataset]][[split_type]][[time]][[group]] <- median(data[[dataset]][[split_type]][[time]][[group]]$rating1)
         }
         
-        median_rating[[dataset]][[split_type]][[time]][['across']] <- median(c(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating3,
-                                                                               data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating3))
+        median_rating[[dataset]][[split_type]][[time]][['across']] <- median(c(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating2,
+                                                                               data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$rating2))
         median_performance[[dataset]][[split_type]][[time]][['across']] <- median(c(data[[dataset]][[split_type]][[time]][['Well-rested']]$performance,
                                                                                     data[[dataset]][[split_type]][[time]][['Sleep-deprived']]$performance))
         median_sleepiness[[dataset]][[split_type]][[time]][['across']] <- median(c(data[[dataset]][[split_type]][[time]][['Well-rested']]$rating1,
