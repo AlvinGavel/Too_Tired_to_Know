@@ -74,8 +74,8 @@ for (i in 1:length(datasets)) {
   if (dataset == 'working memory') {
     count_twelves <- sum(file_data$order_in_test == 12)
     count_tens <- sum(file_data$order_in_test == 10)
-    printOutput(paste('In the working memory test', count_twelves, 'rounds went to 12 rounds'), outputFile)
-    printOutput(paste('While', count_tens- count_twelves, 'rounds only went to 10 rounds'), outputFile)
+    printOutput(paste('In the working memory test', count_twelves, 'sessions went to 12 rounds'), outputFile)
+    printOutput(paste('While', count_tens - count_twelves, 'sessions only went to 10 rounds'), outputFile)
   }
   
   if (dataset == 'throughput') {
@@ -195,9 +195,9 @@ for (i in 1:length(datasets)) {
         printOutput(paste0('         The median self-rated performance in the well-rested group was ', median_rating[[dataset]][[split_type]][[time]][['Well-rested']]), outputFile)
         printOutput(paste0('         The median self-rated performance in the sleep-deprived group was ', median_rating[[dataset]][[split_type]][[time]][['Sleep-deprived']]), outputFile)
         printOutput(paste0('         The median self-rated performance across groups was ', median_rating[[dataset]][[split_type]][[time]][['across']]), outputFile)
-        printOutput(paste0('         The median actual performance in the well-rested group was ', format(median_performance[[dataset]][[split_type]][[time]][['Well-rested']]), nsmall = 2), outputFile)
-        printOutput(paste0('         The median actual performance in the sleep-deprived group was ', format(median_performance[[dataset]][[split_type]][[time]][['Sleep-deprived']]), nsmall = 2), outputFile)
-        printOutput(paste0('         The median actual performance across groups was ', format(median_performance[[dataset]][[split_type]][[time]][['across']]), nsmall = 2), outputFile)
+        printOutput(paste0('         The median actual performance in the well-rested group was ', format(median_performance[[dataset]][[split_type]][[time]][['Well-rested']], nsmall = 2)), outputFile)
+        printOutput(paste0('         The median actual performance in the sleep-deprived group was ', format(median_performance[[dataset]][[split_type]][[time]][['Sleep-deprived']], nsmall = 2)), outputFile)
+        printOutput(paste0('         The median actual performance across groups was ', format(median_performance[[dataset]][[split_type]][[time]][['across']], nsmall = 2)), outputFile)
         printOutput(paste0('         The median reported sleepiness in the well-rested group was ', median_sleepiness[[dataset]][[split_type]][[time]][['Well-rested']]), outputFile)
         printOutput(paste0('         The median reported sleepiness in the sleep-deprived group was ', median_sleepiness[[dataset]][[split_type]][[time]][['Sleep-deprived']]), outputFile)
         printOutput(paste0('         The median reported sleepiness across groups was ', median_sleepiness[[dataset]][[split_type]][[time]][['across']]), outputFile)
