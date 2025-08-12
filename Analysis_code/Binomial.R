@@ -761,7 +761,7 @@ for (n in 1:length(practical_significances)) {
                                     obs=hist_test),
                          data.frame(fill=colours[['Well-rested']],
                                     obs=hist_control))
-        ggplot(bar_df, aes(x=obs, fill=fill)) +
+        ggplot(hist_df, aes(x=obs, fill=fill)) +
           geom_histogram(bins=9, colour="black", position=position_dodge2(preserve = 'single')) +
           scale_fill_identity() +
           theme(text = element_text(size = 25)) +
